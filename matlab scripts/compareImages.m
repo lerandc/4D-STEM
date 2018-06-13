@@ -6,13 +6,13 @@ close all
 
 %set reference image and test image folders
 ref_folder = 'C:\Users\leran\Desktop\Simulations and Data\6-5\IGOR Final layer orig\layer7\';
-test_folder = 'C:\Users\leran\Desktop\Simulations and Data\6-5\FP_convergence\f16\p_FP_16_f16\';
+test_folder = 'C:\Users\leran\Desktop\Simulations and Data\6-13\613_tile_large_pot_bound\';
 base_ref_name = 'STO_im';
-base_test_name = '6_5_p_FP_16_f16';
+base_test_name = 'p_bound_5';
 
 %by now all files are .mat
 ref_ext = '-7.mat';
-test_ext = '_FP_avg.mat';
+test_ext = '_FP1.mat';
 
 %get map for X0,Y0 style image labeling (PRISM), origin in top left
 X_lim = 59; Y_lim = 59;
@@ -33,7 +33,7 @@ if length(prism_map) ~= length(igor_map)
 end
 
 %get better way
-im_size = [7,7];
+im_size = [27,27];
 %create annular integration masks and resize it size of largest image
 [mask1,mask2,mask3] = annularIntMasks([64, 64]);
 mask1 = imresize(mask1,im_size); mask2 = imresize(mask2,im_size);
@@ -95,6 +95,10 @@ fprintf('PSNR: %d \n',means(3))
 fprintf('Percent Error, 1st annular integration: %d \n', means(4))
 fprintf('Percent Error, 2nd annular integration: %d \n', means(5))
 fprintf('Percent Error, 3rd annular integration: %d \n', means(6))
+
+[fig1,fig2,fig3] = plotOutputs(result_matrix);
+
+save('results','igor_map','means','prism_map','result_matrix','fig1','fig2','fig3');
 
 function map = getPrismMap(X_lim,Y_lim)
 %X lim is highest X value of prism imaging
@@ -182,4 +186,34 @@ function [means] = getMeans(cell_input)
         means = means+cell_input{i};
     end
     means = means./len;
+end
+
+function [fig1,fig2,fig3] = plotOutputs(result_matrix)
+    result_matrix = reshape(result_matrix,[], 60);
+    data_hold = zeros(size(result_matrix));
+    for i = 1:60
+        for j = 1:60
+            data_hold(i,j) = result_matrix{i,j}(1);
+        end
+    end
+    imagesc(data_hold)
+    colorbar
+    title('MSE')
+    fig1 = gcf;
+    
+    for i = 1:60
+        for j = 1:60
+            data_hold(i,j) = result_matrix{i,j}(2);
+        end
+    end
+    figure; imagesc(data_hold); colorbar; title('SSIM')
+    fig2 = gcf;
+    for i = 1:60
+        for j = 1:60
+            data_hold(i,j) = result_matrix{i,j}(3);
+        end
+    end
+
+    figure; imagesc(data_hold); colorbar; title('PSNR')
+    fig3 = gcf;
 end

@@ -4,8 +4,8 @@ close all
 tic
 
 cell_dim = 48.8125;
-real_pixel = 0.1;
-f = 2;
+real_pixel = 0.025;
+f = 4;
 [qxa,qya,qdist] = f_get_PRISM_coords(cell_dim,real_pixel,f);
 
 files = dir('*FP*.mrc');
