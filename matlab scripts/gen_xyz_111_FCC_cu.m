@@ -9,9 +9,9 @@ beta = alpha; gamma = alpha;
 
 pos = [0 0 0; 0 1/2 1/2; 1/2 0 1/2; 1/2 1/2 0]; %wyckoff positions, each layer is different atom type
 
-num_rep_x = 50;
-num_rep_y = 50;
-num_rep_z = 50;
+num_rep_x = 100;
+num_rep_y = 100;
+num_rep_z = 400;
 num_rep = 100;
 num_pos = size(pos,1);
 
@@ -38,7 +38,7 @@ vec = -[a 0 0]+[0 b 0];
 %translate so origin is in center
 center = mean(coords);
 coords = coords-center;
-plot3(coords(1:1000,1),coords(1:1000,2),coords(1:1000,3),'o')
+%plot3(coords(1:1000,1),coords(1:1000,2),coords(1:1000,3),'o')
 hold on
 
 %rotate coords until rotating vector is in xz plane
@@ -53,7 +53,7 @@ end
 z_theta = theta;
 coords = rotZ(z_theta,coords);
 vec2 = rotZ(z_theta,vec);
-plot3(coords(1:1000,1),coords(1:1000,2),coords(1:1000,3),'o')
+%plot3(coords(1:1000,1),coords(1:1000,2),coords(1:1000,3),'o')
 
 %rotate coords until rotating vector is parallel to Z
 check = 1-dot(vec2,[0 0 1]);
@@ -67,7 +67,7 @@ end
 y_theta = theta;
 coords = rotY(y_theta,coords);
 vec3 = rotY(y_theta,vec2);
-plot3(coords(1:1000,1),coords(1:1000,2),coords(1:1000,3),'o')
+%plot3(coords(1:1000,1),coords(1:1000,2),coords(1:1000,3),'o')
 
 %rotate desired angle around Z
 coords = rotZ(-atan(1/sqrt(2)),coords);
@@ -76,19 +76,59 @@ coords = rotZ(-atan(1/sqrt(2)),coords);
 coords = rotY(-y_theta,coords);
 coords = rotZ(-z_theta,coords);
 
-%could translate back, but convenient to have it centered
-%cut into a rectangular block
 
+%final alignment
 coords = rotZ((-45*pi/180),coords);
 coords = rotX(pi/2,coords);
+%%
+%cut into a rectangular block
 coords(abs(coords(:,1))>30,1) = NaN;
 coords(abs(coords(:,2))>30,2) = NaN;
-coords(abs(coords(:,3))>30,3) = NaN;
+coords(abs(coords(:,3))>175,3) = NaN;
 
 check_list = ~isnan(sum(coords,2));
 final_coords = coords(check_list,:);
+final_coords = final_coords-min(final_coords);
 figure
 plot3(final_coords(:,1),final_coords(:,2),final_coords(:,3),'o')
+%%
+atom_list = cell(size(final_coords,1),2);
+for i = 1:length(atom_list)
+   atom_list{i,1} = 'Cu';
+   atom_list{i,2} = 29;
+end
+debye = ones(length(atom_list),1)*0.085; %see source in notebook pg 28 for Cu DW
+occ = ones(length(atom_list),1);
+
+writeXYZ(final_coords,atom_list,'FCC_Cu_111_tall.xyz');
+writeXYZ_prism(final_coords,atom_list,occ,debye,'FCC_Cu_111_multislice_tall.xyz');
+
+fclose('all');
+
+function writeXYZ(coords,atoms,file_name)
+    fID = fopen(file_name,'w');
+    fprintf(fID,'%i \n',length(atoms));
+    fprintf(fID,'%s \n',file_name);
+    for i = 1:length(atoms)
+        fprintf(fID,'%3s %10.5f %10.5f %10.5f \n',...
+            atoms{i,1},coords(i,1),coords(i,2),coords(i,3));
+    end
+    fprintf(fID,'-1');
+end
+
+function writeXYZ_prism(coords,atoms,occ,debye,file_name)
+    fID = fopen(file_name,'w');
+    fprintf(fID,'%i \n',length(atoms));
+%     fprintf(fID,'%10.5f %10.5f %10.5f \n',...
+%         max(coords(:,1)),max(coords(:,2)),max(coords(:,3)));
+    fprintf(fID,'%10.5f %10.5f %10.5f \n',...
+       60,60,max(coords(:,3)));
+    for i = 1:length(atoms)
+        fprintf(fID,'%3s %10.5f %10.5f %10.5f %10.5f %10.5f \n',...
+            num2str(atoms{i,2}),coords(i,1),coords(i,2),coords(i,3),occ(i),debye(i));
+    end
+    fprintf(fID,'-1');
+end
 
 function end_coords = rotZ(theta,coords)
   rot_mat = [cos(theta) -sin(theta) 0;

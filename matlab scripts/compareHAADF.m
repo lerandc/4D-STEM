@@ -5,9 +5,9 @@ mse_labels = {'none','corr','rigid','sub'}';
 
 %set reference image and test image folders
 ref_folder = 'C:\Users\leran\Desktop\Simulations and Data\6-13\IGOR HAADF data\';
-test_folder = 'C:\Users\leran\Desktop\Simulations and Data\6-5\FP_convergence\f16\p_FP_16_f16\';
+test_folder = 'C:\Users\leran\Desktop\Simulations and Data\6-14\3D scale tests\';
 ref_HAADF_name = 'STO_HAADFstack.mat';
-test_HAADF_name = 'HAADF.mat';
+test_HAADF_name = 'HAADF_f8.mat';
 
 ref_HAADF_data = load(strcat(ref_folder,ref_HAADF_name));
 test_HAADF_data = load(strcat(test_folder,test_HAADF_name));

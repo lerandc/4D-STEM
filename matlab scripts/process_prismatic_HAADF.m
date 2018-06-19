@@ -1,8 +1,8 @@
 clearvars
 close all
 
-folder = 'C:\Users\leran\Desktop\Simulations and Data\6-5\FP_convergence\f16\p_FP_16_f16\';
-file_name = '6_5_p_FP_16_f16.mrc';
+%folder = 'C:\Users\leran\Desktop\Simulations and Data\6-13\613_3D_scale\';
+file_name = 'slice7_STO_layer_compare_m.mrc';
 
 min_ang = 88;
 max_ang = 440; 
@@ -36,6 +36,6 @@ function [integrated, angmax] = integrateBins(angmin,angmax,d_step,stack)
         integrated = sum(stack(:,:,init:end),3);
         angmax = alpha_max;
     else
-        integrated = sum(stack(:,:,init:final,3));
+        integrated = sum(stack(:,:,init:final),3);
     end
 end
