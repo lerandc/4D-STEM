@@ -100,8 +100,8 @@ end
 debye = ones(length(atom_list),1)*0.085; %see source in notebook pg 28 for Cu DW
 occ = ones(length(atom_list),1);
 
-writeXYZ(final_coords,atom_list,'FCC_Cu_111_tall.xyz');
-writeXYZ_prism(final_coords,atom_list,occ,debye,'FCC_Cu_111_multislice_tall.xyz');
+% writeXYZ(final_coords,atom_list,'FCC_Cu_111_tall.xyz');
+% writeXYZ_prism(final_coords,atom_list,occ,debye,'FCC_Cu_111_multislice_tall.xyz');
 
 fclose('all');
 
