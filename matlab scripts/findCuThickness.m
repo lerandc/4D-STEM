@@ -11,7 +11,7 @@ sort_cell = regexp(files,strcat(base,'\d*+'),'match','once');
 file_cell = IDfiles(sort_cell);
 test_im_size = getImSize(strcat(file_cell{1},ext));
 
-sigma = (90/10)/2.355;
+sigma = (90/8.8052)/2.355;
 gauss_kernel = fspecial('gaussian',[test_im_size(1) test_im_size(2)], sigma);
 %for 3D output
 % annular_range = [73,350]; d_step = 1; %mrads for both

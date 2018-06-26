@@ -1,13 +1,15 @@
 scale_factor = [1 10 50 100 150 250].*1e4; %scale to add poisson noise
 %base loop for iterating through files
 files = dir('*.mat');
-for i = 1:5 %length(files)
+tic
+for i = 1:100
     for j = 1:length(scale_factor)
         orig = loadImageFromMat(files(i).name);
-        noisy = addNoise(orig,scale_factor(i));
-        saveNoiseArray(files(i).name,noisy,scale_factor(i));
+        noisy = addNoise(orig,scale_factor(j));
+        %saveNoiseArray(files(i).name,noisy,scale_factor(i));
     end
 end
+toc
 
 function img = loadImageFromMat(f_name)
     data = load(f_name);

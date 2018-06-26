@@ -17,7 +17,7 @@ def main():
     start_time = time.time()
 
     K.tensorflow_backend._get_available_gpus()
-    sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
+    #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
     input_folder = '/srv/home/lerandc/CNN/s8_ph0_Ti_pacbed_1111_npy_noise_peak_1/'
     result_path =  '/srv/home/lerandc/CNN/s8_ph0_Ti_pacbed_1111_npy_noise_peak_1/results/'
