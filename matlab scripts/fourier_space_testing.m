@@ -3,10 +3,10 @@ m = 9.19383e-31;
 e = 1.602177e-19;
 c = 299792458;
 h = 6.62607e-34;
-E0 = 200000;
+E0 = 300000;
 lambda = 1e10*(h/(sqrt(2*m*e*E0)))/(sqrt(1+(e*E0)/(2*m*c*c)));
 
-real_pixel_size = 0.075;
+real_pixel_size = 0.05;
 cell_dim = 65;
 f = 2;
 f_x = 4*f;
