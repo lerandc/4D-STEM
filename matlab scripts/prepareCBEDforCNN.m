@@ -1,8 +1,9 @@
 clearvars
 close all
+tic
 %%
-cell_dim = [48.8125, 48.8125];
-real_pixel = [0.025];
+cell_dim = [48.9125, 48.9125];
+real_pixel = [0.075];
 E0 = 200e3;
 FP = 1;
 behavior = 'unique';
@@ -10,30 +11,36 @@ q_cut = 50; %mrad
 q_cut_style = 'rect';
 algorithm = 'm';
 
-f_processCBED(cell_dim,real_pixel,E0,FP,behavior,q_cut,q_cut_style,algorithm);
+f_processCBED(cell_dim,real_pixel,E0,FP,behavior,q_cut,q_cut_style,algorithm,1);
 
 %%
 source_size = 90; %pm, FWHM
-base_name = 'test';
-base_ext = '.mat';
-array_size = [60,60]; %+1 of max indices of 4D array
+base_name = 'STO_thick_025_025_slice';
+base_ext = '_FP1.mat';
 
-f_effSourceSize(source_size,real_pixel,base_name,base_ext,array_size);
-
-%%
 radii = [5 6 7]; %pixels
-centers = generateCenters([35 35],[1 1]); %centers of atom
+centers = generateCenters([7 7],[1 1]); %centers of atom
 out_name = 'Sr_PACBED';
 out_ext = '.mat';
+array_size = [13,13]; %+1 of max indices of 4D array
+n_slices = 51;
 
-f_createPACBED(radii,centers,base_name,base_ext,out_name,out_ext,array_size);
+parfor slice = 0:n_slices
+    cur_base_name = strcat(base_name,num2str(slice));
+    cur_out_ext = strcat('_',num2str(slice),out_ext);
+    
+    f_effSourceSize(source_size,real_pixel,cur_base_name,base_ext,array_size);
+    f_createPACBED(radii,centers,cur_base_name,base_ext,out_name,cur_out_ext,array_size);
+end
 %%
+toc
+tic
 file_list = dir(strcat(out_name,'*',out_ext));
-scale_factors = [1 5 10 15 25];
+scale_factors = [1 5 10 50 100]; %loosely proportional to beam current/camera frequency
 
 f_addPoissonNoise(file_list,scale_factors);
 
-
+toc
 %%
 
 function centers = generateCenters(center_list,shifts)

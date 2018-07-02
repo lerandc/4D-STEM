@@ -5,7 +5,8 @@ close all
 
 files = dir('*.mrc'); files = {files.name}';
 base = 'multislice_2Doutput_slice';
-ext = '_FCC_Cu_111_350nm_8FP.mrc';
+ext = '_626_Cu_fine_search.mrc';
+%ext = '_FCC_Cu_111_350nm_8FP.mrc';
 
 sort_cell = regexp(files,strcat(base,'\d*+'),'match','once');
 file_cell = IDfiles(sort_cell);
@@ -21,6 +22,7 @@ test_array = processTestImages(file_cell,ext,gauss_kernel,test_im_size);
 %test_array2 = processTestImages(file_cell,ext,gauss_kernel,im_size,annular_range,d_step);
 
 ref_array = loadImageFromMat('ref_cell.mat');
+%ref_array = loadImageFromMat('cal_ref_mat.mat');
 ref_im_size = size(ref_array);
 %%
 %set up masks
@@ -33,14 +35,24 @@ test_centers = generateCenters(test_centers,[1.5 1.5]);
 ref_centers = [65, 56;
                37, 36;
                33, 70;
-               69, 21];
+               69, 21;
+               60, 88;
+               91, 77;
+               12, 15];
+cal_ref_centers = [47, 45;
+                   77, 32;
+                   74, 64;
+                   43, 80;
+                   16, 58;];
+%ref_centers = cal_ref_centers;           
 ref_centers = generateCenters(ref_centers,[3 3]);
 
 [test_mask, ref_mask] = setUpMasks(radius,test_px_size,ref_px_size,test_centers,ref_centers,test_im_size,ref_im_size);
 %%
 %prepare reference data
 rough_scale = 3.2862e4;
-offset = 9.8761e3;
+%rough_scale = 3.9134e4;
+offset = 9.8969e3; %9.8761e3; 9.8969e3;
 %they used following (approx)
 % rough_scale = 4.189905e4;
 % offset = 9.9243e3;
@@ -51,7 +63,7 @@ ref_max = max(max(ref_array.*ref_mask));
 
 %%
 %compare the images
-[best_inds, errors, out_radius] = compareArrays(test_array,ref_array,test_mask,ref_mask,radius);
+[best_inds, errors, out_radius,test_sums_avg] = compareArrays(test_array,ref_array,test_mask,ref_mask,radius);
 %%
 %error plotting and interpretation
 [sorted_inds,ind_order] = sort(best_inds(:,1));
@@ -69,9 +81,11 @@ title('mean error of slice')
 figure;
 histfit(best_inds(:,1),length(ia)-1)
 [mu, sig] = normfit(best_inds(:,1));
-title(['frequency of best slice, \mu = ' num2str(mu) ', \sigma = ' num2str(sig)])
+mode_ind = mode(best_inds(:,1));
 lb = mu-1.96*sig/(sqrt(length(best_inds)));
 ub = mu+1.96*sig/(sqrt(length(best_inds)));
+title(['frequency of best slice, \mu = ' num2str(mu) ', \sigma = ' num2str(sig) ', mode = ' num2str(mode_ind)])
+
 
 %%
 function centers = generateCenters(center_list,shifts)
@@ -95,7 +109,7 @@ function centers = generateCenters(center_list,shifts)
 
 end
 
-function [best_inds,errors,out_radius] = compareArrays(test_array,ref_array,test_mask,ref_mask,radius)
+function [best_inds,errors,out_radius,test_sums_avg] = compareArrays(test_array,ref_array,test_mask,ref_mask,radius)
 %mask arrays should be ordered in chunks of Y x X x N, where N is number of
 %radii times number of centers, and N is radii chunks of centers,
 %therefore, should loop through layers first, then centers, then radii; 
@@ -107,7 +121,7 @@ function [best_inds,errors,out_radius] = compareArrays(test_array,ref_array,test
     rad_iter = size(radius,1);
     ref_center_iter = size(ref_mask,3)./rad_iter;
     test_center_iter = size(test_mask,3)./rad_iter;
-    
+    test_sums_avg = zeros(size(test_array,3),2);
     %initialize output arrays
     best_inds = zeros(rad_iter*ref_center_iter*test_center_iter,2);
     errors = best_inds;
@@ -132,7 +146,8 @@ function [best_inds,errors,out_radius] = compareArrays(test_array,ref_array,test
                     test_current = test_array(:,:,layer);
                     test_sum = sum(sum(test_current.*test_current_mask))./(sum(sum(test_current_mask)));
                     test_max = max(max(test_current.*test_current_mask));
-                    
+                    test_sums_avg(layer,1) = test_sums_avg(layer,1) + test_sum;
+                    test_sums_avg(layer,2) = test_sums_avg(layer,2) + 1;
                     area_error = abs(ref_sum-test_sum)/ref_sum;
                     if area_error < best_error(1)
                         errors(count,1) = area_error;

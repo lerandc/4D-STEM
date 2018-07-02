@@ -4,12 +4,12 @@ function f_effSourceSize(source_size,pixel_size,base_name,base_ext,array_size)
     imsize = size(loadImageFromMat(strcat(base_name,'_X0_Y0',base_ext)));
    
     sig = (source_size/pixel_size)./(2.355);
-    gaussKernel = fpsecial('gaussian',array_size,sig);
+    gaussKernel = fspecial('gaussian',array_size,sig);
 
     orig_CBED_array = get4DArray(base_name,base_ext,img_map,imsize);
 
     result = convolve2D(orig_CBED_array,gaussKernel);
-    algined_result = alignResult(result,img_map);
+    algined_result = single(squeeze(alignResult(result,img_map)));
 
     save4DArray(algined_result,base_name,base_ext,source_size);
 

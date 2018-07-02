@@ -1,16 +1,16 @@
 function f_createPACBED(radii,centers,base_name,base_ext,out_name,out_ext,array_size)
     imsize = size(loadImageFromMat(strcat(base_name,'_X0_Y0',base_ext)));
-    prism_map = getPrismMap(array_size(1)-1,array_size(2)-2);
+    prism_map = getPrismMap(array_size(1)-1,array_size(2)-1);
     
     %load once to prevent slow down from tons of file reads
     orig_CBED_array = get4DArray(base_name,base_ext,prism_map,imsize);
 
-    xvec = 1:size(prismMap,2);
-    yvec = 1:size(prismMap,1);
+    xvec = 1:size(prism_map,2);
+    yvec = 1:size(prism_map,1);
     [xmesh, ymesh] = meshgrid(xvec,yvec);
 
-    prism_map = reshape(prism_map,[],1);
-    orig_CBED_array = reshape(orig_CBED_array,cat(1,array_size(1)*array_size(2), imsize));
+    %prism_map = reshape(prism_map,[],1);
+    orig_CBED_array = reshape(orig_CBED_array,cat(2,array_size(1)*array_size(2), imsize));
 
     number = 0;
 
@@ -24,9 +24,9 @@ function f_createPACBED(radii,centers,base_name,base_ext,out_name,out_ext,array_
             mask = dist_grid < radius;
 
             mask = reshape(mask,[],1);
-            pacbed = squeeze(sum(orig_CBED_array(mask,:,:),1))./(sum(sum(mask)));
+            pacbed = single(squeeze(sum(orig_CBED_array(mask,:,:),1))./(sum(sum(mask))));
 
-            savePACBED(pacbed,out_name,out_ext,number,radius);
+            savePACBED(pacbed,out_name,out_ext,center,radius);
             
             number = number + 1;
         end
@@ -66,9 +66,10 @@ function array = get4DArray(base_name,base_ext,map,imsize)
 
 end
 
-function savePACBED(pacbed,out_name,out_ext,number,radius)
+function savePACBED(pacbed,out_name,out_ext,center,radius)
     %need to establish a convention
-    f_name = strcat(out_name,'_',num2str(number),'_',num2str(radius),out_ext);
+    f_name = strcat(out_name,'_',num2str(center(1)),'_',num2str(center(2)),...
+        '_',num2str(radius),out_ext);
     save(f_name,'pacbed','-v7');
 
 end

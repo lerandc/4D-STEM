@@ -25,7 +25,7 @@ function f_processCBED(cell_dim,real_pixel,E0,FP,behavior,q_cut,q_cut_style,algo
         [qxa,qya,qdist] = f_get_PRISM_coords(cell_dim,real_pixel,interpolation);
         f = interpolation;
     elseif algorithm == 'm'
-        [qxa,qya,qdist,~] = f_get_multislice_coords(cell_dim,real_pixel);
+        [qxa,qya,qdist,qmask] = f_get_multislice_coords(cell_dim,real_pixel);
         f = 1;
     else
         error('Check value of algorithm input, value should be ''p'' or ''m''')
@@ -36,10 +36,17 @@ function f_processCBED(cell_dim,real_pixel,E0,FP,behavior,q_cut,q_cut_style,algo
     
     if q_cut_style == 'circ'
         qdist = qdist.*lambda.*1e3; %convert to mrad
+        if algorithm == 'm'
+            qdist = imagecrop(qdist.*qmask);
+        end
         dist_mask = qdist < q_cut;
     elseif q_cut_style == 'rect'
         qxa = qxa.*lambda.*1e3; %convert to mrad
         qya = qya.*lambda.*1e3;
+        if algorithm == 'm'
+            qxa = imageCrop(qxa.*qmask);
+            qya = imageCrop(qya.*qmask);
+        end
         qx_check = abs(qxa) < q_cut;
         qy_check = abs(qya) < q_cut;
         dist_mask = (qx_check+qy_check) == 2;
@@ -50,24 +57,24 @@ function f_processCBED(cell_dim,real_pixel,E0,FP,behavior,q_cut,q_cut_style,algo
     if FP < 1
         error('FP should be at least 1')
     elseif FP == 1
-        for i = 1:length(file_list)
+        parfor i = 1:length(file_list)
             fname = file_list(i).name;
             map = mrcReader(fname);
-            map = rot90(fftshift(map.stack),2); %rotate to get pointing inwards to atoms
+            map = rot90((map.stack),2); %rotate to get pointing inwards to atoms
             out_map = imageCrop((dist_mask.*map)).*(f^4); %until prismatic update pushed
-            save(strcat(fname(1:end-4),'.mat'),'out_map','-v7');
-         end
+            parsave(strcat(fname(1:end-4),'.mat'),out_map);
+        end
     else
         if behavior == 'average'
             averageScheme(file_list,dist_mask); % at bottom for clarity's sake
         elseif behavior == 'unique'
-            for i = 1:length(file_list)
+            parfor i = 1:length(file_list)
                 fname = file_list(i).name;
                 map = mrcReader(fname);
                 map = rot90(fftshift(map.stack),2); %rotate to get pointing inwards to atoms
                 out_map = imageCrop((dist_mask.*map)).*(f^4); %until prismatic update pushed
-                save(strcat(fname(1:end-4),'.mat'),'out_map','-v7');
-             end
+                parsave(strcat(fname(1:end-4),'.mat'),out_map);
+            end
         else
             error('Invalid behavior given for FP configurations, value should be ''average'' or ''unique''')
         end
@@ -112,4 +119,8 @@ function averageScheme(file_list,dist_mask)
         save(strcat(base_names{i},'_avg.mat'),'out_map','-v7');
     end
 
+end
+
+function parsave(name,var)
+    save(name,'var','-v7');
 end

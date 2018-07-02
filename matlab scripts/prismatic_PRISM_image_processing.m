@@ -11,7 +11,7 @@ f = 4;
 files = dir('*FP*.mrc');
 FP_check=0; %bool check to do FP averaging
 n_FP=16;
-cut_off_dist = 1.125; %cut off dist in fourier space
+cut_off_dist = 2; %cut off dist in fourier space
 dist_mask = qdist < cut_off_dist;
 
 
@@ -21,7 +21,7 @@ if ~FP_check
        map = mrcReader(fname);
        map = fftshift(map.stack);
        out_map = imageCrop((dist_mask.*map)).*(f^4);
-       save(strcat(fname(1:end-4),'.mat'),'out_map','-v7');
+       %save(strcat(fname(1:end-4),'.mat'),'out_map','-v7');
     end
 else
     file_cell = struct2cell(files)'; file_cell = file_cell(:,1);

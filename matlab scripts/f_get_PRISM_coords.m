@@ -37,7 +37,9 @@ function [qx_mesh, qy_mesh, q_dist] = f_get_PRISM_coords(cell_dim,real_pixel_siz
     %dimensions of f
     %result is fftshifted
     [qx_mesh,qy_mesh,q_dist] = makeGrid(qx,qxInd,qy,qyInd,[fx fy]);
-    
+    qx_mesh = fftshift(qx_mesh);
+    qy_mesh = fftshift(qy_mesh);
+    q_dist = fftshift(q_dist);
 
 end
 

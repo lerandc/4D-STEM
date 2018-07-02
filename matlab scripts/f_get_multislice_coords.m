@@ -9,12 +9,12 @@ function [qx_mesh,qy_mesh,q_dist,q_mask] = f_get_multislice_coords(cell_dim,real
         cell_dim(2) = cell_dim(1);
     end
     
-    if length(real_pixel_size) < 2
-        real_pixel_size(2) = real_pixel_size(1);
+    if length(real_pixel) < 2
+        real_pixel(2) = real_pixel(1);
     end
 
-    im_size(1) = f_x*round(cell_dim(1)/(f_x*real_pixel_size(1)));
-    im_size(2) = f_y*round(cell_dim(2)/(f_y*real_pixel_size(2)));
+    im_size(1) = f_x*round(cell_dim(1)/(f_x*real_pixel(1)));
+    im_size(2) = f_y*round(cell_dim(2)/(f_y*real_pixel(2)));
 
     pixel_size = cell_dim./im_size;
     
@@ -22,8 +22,9 @@ function [qx_mesh,qy_mesh,q_dist,q_mask] = f_get_multislice_coords(cell_dim,real
     qy = getCoords(im_size(2),pixel_size(2));
 
     [qx_mesh,qy_mesh] = meshgrid(qx,qy);
-
-    q_dist = sqrt(qx_mesh.^2+qy_mesh.^2);
+    qx_mesh = fftshift(qx_mesh);
+    qy_mesh = fftshift(qy_mesh);
+    q_dist = fftshift(sqrt(qx_mesh.^2+qy_mesh.^2));
     
     q_mask = zeros(im_size(2),im_size(1));
 
@@ -40,7 +41,7 @@ function [qx_mesh,qy_mesh,q_dist,q_mask] = f_get_multislice_coords(cell_dim,real
         end
     end
     
-
+    q_mask = fftshift(q_mask);
 end
 
 function q = getCoords(im_size,pixel_size)
