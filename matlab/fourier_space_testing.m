@@ -7,15 +7,10 @@ E0 = 300e3;
 lambda = 1e10*(h/(sqrt(2*m*e*E0)))/(sqrt(1+(e*E0)/(2*m*c*c)));
 
 real_pixel_size = 0.00975;
-<<<<<<< Updated upstream
-cell_dim = 60;
-f = 2;
-=======
 cell_dim = 50;
 z_size = 347.65;
 slice_thickness = 1.5;
 f = 4;
->>>>>>> Stashed changes
 f_x = 4*f;
 im_size = f_x*round(cell_dim/(f_x*real_pixel_size));
 

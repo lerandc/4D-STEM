@@ -158,23 +158,21 @@ def train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_fold
         vertical_flip=1,
         shear_range=0.05)
 
-    datagen.fit(x_train)
+    datagen.fit(train_data)
 
     generator = datagen.flow(
-        x_train,
-        y_train,
+        train_data,
+        train_labels,
         batch_size=batch_size,
-        shuffle=True,
-        target_size=(150, 150))
+        shuffle=True)
 
     validation_generator = datagen.flow(
-        x_train,
-        y_train,
+        train_data,
+        train_labels,
         batch_size=batch_size,
-        shuffle=True,
-        target_size=(150, 150))
+        shuffle=True)
 
-    model.fit_generator(generator,epochs=epochs,steps_per_epoch=len(x_train) / 32,validation_data=validation_generator,validation_steps=(len(x_train)//5)//32,
+    model.fit_generator(generator,epochs=epochs,steps_per_epoch=len(train_data) / 32,validation_data=validation_generator,validation_steps=(len(train_data)//5)//32,
             callbacks=[csv_logger_bnfeature, earlystop])
     #model.fit(train_data, train_labels, epochs=epochs, batch_size=batch_size, shuffle=True, validation_split=0.2,
     #          callbacks=[csv_logger_bnfeature, earlystop])
@@ -240,15 +238,13 @@ def fine_tune(x_train, y_train, sx, sy, max_index, epochs, batch_size, input_fol
         train_data,
         train_labels,
         batch_size=batch_size,
-        shuffle=True,
-        target_size=(150, 150))
+        shuffle=True)
 
     validation_generator = datagen.flow(
         train_data,
         train_labels,
         batch_size=batch_size,
-        shuffle=True,
-        target_size=(150, 150))
+        shuffle=True)
 
     new_model.fit_generator(generator,epochs=epochs,steps_per_epoch=len(train_data) / 32,validation_data=validation_generator,validation_steps=(len(train_data)//5)//32,
             callbacks=[csv_logger_bnfeature, earlystop])
