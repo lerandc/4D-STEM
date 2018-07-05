@@ -4,8 +4,8 @@ clearvars
 close all
 
 files = dir('*.mrc'); files = {files.name}';
-base = 'multislice_2Doutput_slice';
-ext = '_626_Cu_fine_search.mrc';
+base = 'slice';
+ext = '_73_Cu_fine_search_high_angle.mrc';
 %ext = '_FCC_Cu_111_350nm_8FP.mrc';
 
 sort_cell = regexp(files,strcat(base,'\d*+'),'match','once');
@@ -15,10 +15,10 @@ test_im_size = getImSize(strcat(file_cell{1},ext));
 sigma = (90/8.8052)/2.355;
 gauss_kernel = fspecial('gaussian',[test_im_size(1) test_im_size(2)], sigma);
 %for 3D output
-% annular_range = [73,350]; d_step = 1; %mrads for both
-% test_array = processTestImages(file_cell,ext,gauss_kernel,im_size,annular_range,d_step);
+annular_range = [73,350]; d_step = 1; %mrads for both
+test_array = processTestImages(file_cell,ext,gauss_kernel,test_im_size,annular_range,d_step);
 
-test_array = processTestImages(file_cell,ext,gauss_kernel,test_im_size);
+%test_array = processTestImages(file_cell,ext,gauss_kernel,test_im_size);
 %test_array2 = processTestImages(file_cell,ext,gauss_kernel,im_size,annular_range,d_step);
 
 ref_array = loadImageFromMat('ref_cell.mat');
@@ -30,7 +30,8 @@ ref_im_size = size(ref_array);
 radius = [13 14 15 16 17 18]'; %in pixels for the reference image,manually choose
 test_px_size = 0.088052; %pixel step sizes in angstroms
 ref_px_size = 0.044026;
-test_centers = [18, 20];
+%test_centers = [20, 20]; %for 350 max
+test_centers = [14, 25]; %for 475 max
 test_centers = generateCenters(test_centers,[1.5 1.5]);
 ref_centers = [65, 56;
                37, 36;
