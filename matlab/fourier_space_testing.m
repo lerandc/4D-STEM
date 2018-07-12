@@ -6,8 +6,8 @@ h = 6.62607e-34;
 E0 = 200e3;
 lambda = 1e10*(h/(sqrt(2*m*e*E0)))/(sqrt(1+(e*E0)/(2*m*c*c)));
 
-real_pixel_size = 0.075;
-cell_dim = 49.025;
+real_pixel_size = 0.06;
+cell_dim = 48.9125;
 z_size = 347.65;
 slice_thickness = 1.9525;
 f = 4;
@@ -23,10 +23,10 @@ alpha_max = 1e3*qmax*lambda;
 d_step = 1;
 d_vec = d_step/2 : d_step : alpha_max-d_step/2;
 Ndet = ceil(alpha_max);
-N_streams = 4;
+N_streams = 6;
 N_gpu = 4;
 total_streams = N_gpu*N_streams;
-batch_size = 4;
+batch_size = 6;
 im_size = im_size*(1/1);
 
 N_planes = floor(z_size/slice_thickness) + (mod(z_size,slice_thickness) ~= 0);

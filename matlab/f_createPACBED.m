@@ -1,6 +1,6 @@
 function f_createPACBED(radii,centers,base_name,base_ext,out_name,out_ext,array_size)
     imsize = size(loadImageFromMat(strcat(base_name,'_X0_Y0',base_ext)));
-    prism_map = getPrismMap(array_size(1)-1,array_size(2)-1);
+    prism_map = getPrismMap(array_size(1),array_size(2));
     
     %load once to prevent slow down from tons of file reads
     orig_CBED_array = get4DArray(base_name,base_ext,prism_map,imsize);
@@ -11,8 +11,6 @@ function f_createPACBED(radii,centers,base_name,base_ext,out_name,out_ext,array_
 
     %prism_map = reshape(prism_map,[],1);
     orig_CBED_array = reshape(orig_CBED_array,cat(2,array_size(1)*array_size(2), imsize));
-
-    number = 0;
 
     for radius = radii
         for center_iter = 1:length(centers)
@@ -27,8 +25,6 @@ function f_createPACBED(radii,centers,base_name,base_ext,out_name,out_ext,array_
             pacbed = single(squeeze(sum(orig_CBED_array(mask,:,:),1))./(sum(sum(mask))));
 
             savePACBED(pacbed,out_name,out_ext,center,radius);
-            
-            number = number + 1;
         end
     end
 
