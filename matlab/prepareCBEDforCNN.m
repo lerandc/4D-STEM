@@ -11,7 +11,7 @@ q_cut = 50; %mrad
 q_cut_style = 'rect';
 algorithm = 'm';
 
-f_processCBED(cell_dim,real_pixel,E0,FP,behavior,q_cut,q_cut_style,algorithm,1);
+%f_processCBED(cell_dim,real_pixel,E0,FP,behavior,q_cut,q_cut_style,algorithm,1);
 
 %%
 source_size = 90; %pm, FWHM
@@ -25,7 +25,7 @@ out_ext = '.mat';
 array_size = [13,13]; %+1 of max indices of 4D array
 n_slices = 51;
 
-parfor slice = 0:n_slices
+for slice = 0:n_slices
     cur_base_name = strcat(base_name,num2str(slice));
     cur_out_ext = strcat('_',num2str(slice),out_ext);
     

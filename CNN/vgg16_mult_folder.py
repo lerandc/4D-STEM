@@ -34,30 +34,31 @@ def main():
         input_images = [image for image in os.listdir(input_folder) if 'mat' in image]
 
         for image in input_images:
-            #print(image)
-            cmp = image.split('_')
-            #print(cmp)
-            #print(cmp[-1][:-4])
-            if ('noise' in image):
-                label = int(cmp[-2][:])
-            else:
-                label = int(cmp[-1][:-4])    
-            #r = int(cmp[0].split('-')[1][1:])
-            #if r < 8:
+            if ('noise100' in image):
+                #print(image)
+                cmp = image.split('_')
+                #print(cmp)
+                #print(cmp[-1][:-4])
+                if ('noise' in image):
+                    label = int(cmp[-2][:])
+                else:
+                    label = int(cmp[-1][:-4])    
+                #r = int(cmp[0].split('-')[1][1:])
+                #if r < 8:
 
-            img_array = sio.loadmat(input_folder + image)
-            fields = sio.whosmat(input_folder + image)
-            img = img_array[fields[0][0]]
-            #print(img)
-            #print(fields)
-            img_size = img.shape[0]
-            sx, sy = img.shape[0], img.shape[1]
-            new_channel = np.zeros((img_size, img_size))
-            img_stack = np.dstack((img, new_channel, new_channel))
-            x_train_list.append(img_stack)
-            # Ti-r7-3-0_9_30.npy
-            # x_train_list.append(img)
-            y_train_list.append(label)
+                img_array = sio.loadmat(input_folder + image)
+                fields = sio.whosmat(input_folder + image)
+                img = img_array[fields[0][0]]
+                #print(img)
+                #print(fields)
+                img_size = img.shape[0]
+                sx, sy = img.shape[0], img.shape[1]
+                new_channel = np.zeros((img_size, img_size))
+                img_stack = np.dstack((img, new_channel, new_channel))
+                x_train_list.append(img_stack)
+                # Ti-r7-3-0_9_30.npy
+                # x_train_list.append(img)
+                y_train_list.append(label)
 
     nb_train_samples = len(x_train_list)
     print('Image loaded')
@@ -187,9 +188,7 @@ def train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_fold
 
     model.save_weights(result_path + 'bottleneck_fc_model.h5')
 
-def fine_tune(x_train, y_train, sx, sy, max_index, epochs, batch_size, input_folder, result_path):
-    train_data = x_train
-    train_labels = y_train
+def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, input_folder, result_path):
     print(train_data.shape, train_labels.shape)
 
     model = applications.VGG16(weights='imagenet', include_top=False, input_shape=(sx, sy, 3))
@@ -247,7 +246,7 @@ def fine_tune(x_train, y_train, sx, sy, max_index, epochs, batch_size, input_fol
         shuffle=True)
 
     new_model.fit_generator(generator,epochs=epochs,steps_per_epoch=len(train_data) / 32,validation_data=validation_generator,validation_steps=(len(train_data)//5)//32,
-            callbacks=[csv_logger_bnfeature, earlystop])
+            callbacks=[csv_logger_finetune, earlystop])
 
     #new_model.fit(train_data, train_labels, epochs=epochs, batch_size=batch_size, shuffle=True, validation_split=0.2,
                   #callbacks=[csv_logger_finetune, earlystop])

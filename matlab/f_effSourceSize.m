@@ -1,4 +1,5 @@
 function f_effSourceSize(source_size,pixel_size,base_name,base_ext,array_size)
+
     img_map = getPrismMap(array_size(1)-1,array_size(2)-1);
 
     imsize = size(loadImageFromMat(strcat(base_name,'_X0_Y0',base_ext)));

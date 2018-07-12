@@ -4,23 +4,95 @@ import keras
 from keras.models import load_model
 from keras.preprocessing import image
 from keras import optimizers
+from keras.models import Sequential
+from keras.layers import Dropout, Flatten, Dense
 import numpy as np
+import scipy.io as sio
+import scipy.misc as sm
 from PIL import Image
 
 def main():
     #establish paths 
-    input_folder = '/srv/home/lerandc/CNN/s8_ph0_Ti_pacbed_1111_npy_noise_peak_1/'
-    result_path =  '/srv/home/lerandc/CNN/s8_ph0_Ti_pacbed_1111_npy_noise_peak_1/results/'
+    input_folder = '/srv/home/lerandc/CNN/new_set/0_0/'
+    result_path =  '/srv/home/lerandc/CNN/new_set/results/'
     #load a test image
     
-    img = np.load(input_folder + 'Ti-r7-3-0_9_36.npy')
+    """
+    image = 'Sr_PACBED_7_7_7_12_noise50.mat'
+    img_array = sio.loadmat(input_folder + image)
+    fields = sio.whosmat(input_folder + image)
+    img = img_array[fields[0][0]]
     img_size = img.shape[0]
     sx, sy = img.shape[0], img.shape[1]
     new_channel = np.zeros((img_size, img_size))
     img = np.dstack((img, new_channel, new_channel))
-    img = np.reshape(img, (1, 198, 198, 3))
-    """ 
+    img = np.reshape(img, (1, sx, sy, 3))
+    """
+
+    input_base = '/srv/home/lerandc/Experimental Sr PACBED/Sr-PACBEDs/'
+    input_sub_folder = [''] #['Sr_30pm/','Sr_40pm/','Sr_50pm/']    
+    result_path =  '/srv/home/lerandc/CNN/new_set/results/7618 noise100/'
+
+    x_train_list = []
+    y_train_list = []
+    tilt = []
+    int_radius = []
+    noise_level = []
+
+    sx, sy = 0, 0
+
+    for current_folder in input_sub_folder:
+        input_folder = input_base + current_folder
+        input_images = [image for image in os.listdir(input_folder) if 'mat' in image]
+
+        for image in input_images:
+            if not ('noise100' in image):
+                #print(image)
+                #cmp = image.split('_')
+                #print(cmp)
+                #print(cmp[-1][:-4])
+                label = int(13)
+                #label = int( int(cmp[-1][:-4])/10 + 0.5 )
+                #int_radius.append(current_folder)
+                """
+                if ('noise' in image):
+                    label = int(cmp[-2][:])
+                    int_radius.append(int(cmp[-3][:]))
+                    tilt.append(current_folder)
+                    noise_level.append(int(cmp[-1][5:-4]))
+                else:
+                    label = int(cmp[-1][:-4])   
+                    int_radius.append(int(cmp[-2][:]))
+                    tilt.append(current_folder)
+                    noise_level.append(0) 
+                """    
+                #r = int(cmp[0].split('-')[1][1:])
+                #if r < 8:
+
+                img_array = sio.loadmat(input_folder + image)
+                fields = sio.whosmat(input_folder + image)
+                img_array = img_array[fields[0][0]]
+                img_array = img_array.astype('double')
+                for i in range(46):
+                    img = img_array[:,:,i]
+                    #img = np.load(input_folder+image)
+                    img = sm.imresize(np.squeeze(img),(195, 195))
+                    img = img.astype('double')
+                    #print(img.dtype)
+                    img = scale_range(img, 0, 120)
+                    #print(img)
+                    #print(fields)
+                    img_size = img.shape[0]
+                    sx, sy = img.shape[0], img.shape[1]
+                    new_channel = np.zeros((img_size, img_size))
+                    img_stack = np.dstack((img, new_channel, new_channel))
+                    x_train_list.append(img_stack)
+                    # Ti-r7-3-0_9_30.npy
+                    # x_train_list.append(img)
+                    y_train_list.append(label)
     #load and compile the final model 
+
+    # compile setting:
     model = load_model(result_path + 'FinalModel.h5')
     lr = 0.005
     decay = 1e-6
@@ -29,10 +101,16 @@ def main():
     loss = 'categorical_crossentropy'
     model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 
-    classes = model.predict_classes(img, batch_size=10)
-    print(classes)
+    p_classes = model.predict_classes(np.asarray(x_train_list), batch_size=10)
+    p_arrays = model.predict(np.asarray(x_train_list), batch_size=10)
+    y_list = np.asarray(y_train_list)
+    p_class_list = np.asarray(p_classes)
+    #tilt = np.asarray(tilt)
+    int_radius = np.asarray(int_radius)
+    sio.savemat('exp_results2.mat',{'ylist':y_list,'p_class_list':p_class_list,'p_arrays':p_arrays})#,'int_radius':int_radius})#,'tilt':tilt,'int_radius':int_radius,'noise_level':noise_level})
     
-
+    
+    """
     #now test resnet
     input_folder = '/srv/home/lerandc/CNN/s8_ph0_Ti_pacbed_1111_npy_noise_peak_10/'
     result_path =  '/srv/home/lerandc/CNN/s8_ph0_Ti_pacbed_1111_npy_noise_peak_10/results/'
@@ -46,8 +124,8 @@ def main():
 
     classes = model.predict(img, batch_size=10)
     print(classes)
-    """
 
+    
     datagen = image.ImageDataGenerator(
         featurewise_center=True,
         shear_range=0.2,
@@ -61,11 +139,18 @@ def main():
         i += 1
         if i > 20:
             break
+    """
 
-
+def scale_range (input, min, max):
+    input += -(np.min(input))
+    input /= np.max(input) / (max - min)
+    input += min
+    return input    
 
 
 
 
 if __name__ == '__main__':
     main()
+
+

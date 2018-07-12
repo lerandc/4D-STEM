@@ -9,9 +9,9 @@ beta = alpha; gamma = alpha;
 
 pos = [0 0 0; 0 1/2 1/2; 1/2 0 1/2; 1/2 1/2 0]; %wyckoff positions, each layer is different atom type
 
-num_rep_x = 100;
-num_rep_y = 100;
-num_rep_z = 400;
+num_rep_x = 10;
+num_rep_y = 10;
+num_rep_z = 40;
 num_rep = 100;
 num_pos = size(pos,1);
 
@@ -82,8 +82,8 @@ coords = rotZ((-45*pi/180),coords);
 coords = rotX(pi/2,coords);
 %%
 %cut into a rectangular block
-coords(abs(coords(:,1))>30,1) = NaN;
-coords(abs(coords(:,2))>30,2) = NaN;
+coords(abs(coords(:,1))>22.5,1) = NaN;
+coords(abs(coords(:,2))>22.5,2) = NaN;
 coords(abs(coords(:,3))>175,3) = NaN;
 
 check_list = ~isnan(sum(coords,2));
@@ -100,8 +100,8 @@ end
 debye = ones(length(atom_list),1)*0.085; %see source in notebook pg 28 for Cu DW
 occ = ones(length(atom_list),1);
 
-% writeXYZ(final_coords,atom_list,'FCC_Cu_111_tall.xyz');
-% writeXYZ_prism(final_coords,atom_list,occ,debye,'FCC_Cu_111_multislice_tall.xyz');
+writeXYZ(final_coords,atom_list,'Cu_76_init_guess.xyz');
+writeXYZ_prism(final_coords,atom_list,occ,debye,'Cu_76_init_guess_multislice.xyz');
 
 fclose('all');
 
@@ -119,10 +119,10 @@ end
 function writeXYZ_prism(coords,atoms,occ,debye,file_name)
     fID = fopen(file_name,'w');
     fprintf(fID,'%i \n',length(atoms));
-%     fprintf(fID,'%10.5f %10.5f %10.5f \n',...
-%         max(coords(:,1)),max(coords(:,2)),max(coords(:,3)));
     fprintf(fID,'%10.5f %10.5f %10.5f \n',...
-       60,60,max(coords(:,3)));
+        max(coords(:,1)),max(coords(:,2)),max(coords(:,3)));
+%     fprintf(fID,'%10.5f %10.5f %10.5f \n',...
+%        60,60,max(coords(:,3)));
     for i = 1:length(atoms)
         fprintf(fID,'%3s %10.5f %10.5f %10.5f %10.5f %10.5f \n',...
             num2str(atoms{i,2}),coords(i,1),coords(i,2),coords(i,3),occ(i),debye(i));
