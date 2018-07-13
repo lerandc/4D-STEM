@@ -39,7 +39,7 @@ def prismMap(xlim, ylim):
     pMap = [[[y,x] for x in range(xlim)] for y in range(ylim)]
     return pMap
 
-def get4Darray(base_name,base_ext,map_lim,imsize):
+def get4Darray(base_name,base_ext,map_lim,imsize,folder):
     #loads images into npy array
     #imsize should be a tuple
     #map_lim should be a tuple of (xlim,ylim)
@@ -50,7 +50,7 @@ def get4Darray(base_name,base_ext,map_lim,imsize):
     output = np.zeros(out_sz,dtype=np.float32)
     for x in range(map_lim[0]):
         for y in range(map_lim[1]):
-            output[x,y,:,:] = np.load(base_name+'_X'+str(x)+'_Y'+str(y)+base_ext)
+            output[x,y,:,:] = np.load(folder+base_name+'_X'+str(x)+'_Y'+str(y)+base_ext)
 
     return output
 
@@ -77,9 +77,9 @@ def createPACBED(radii,centers,out_name,out_ext,array_size,origCBEDarray,folder)
             f_name = out_name+'_'+str(cent_x) + '_' + str(cent_y) + '_' + str(radius) + out_ext
             np.save(folder+f_name,pacbed)
 
-def effSourceSize(source_size,pixel_size,base_name,base_ext,array_size):
-    imsize = (np.load(base_name+'_X0_Y0'+base_ext)).shape
-    origCBEDarray = get4Darray(base_name,base_ext,array_size,imsize)
+def effSourceSize(source_size,pixel_size,base_name,base_ext,array_size,folder):
+    imsize = (np.load(folder+base_name+'_X0_Y0'+base_ext)).shape
+    origCBEDarray = get4Darray(base_name,base_ext,array_size,imsize,folder)
     sigma = (source_size/pixel_size[0])/(2.355)
     kernel = gaussKernel(sigma,array_size[0])
 
@@ -216,7 +216,7 @@ def processCBED(cell_dim,real_pixel,E0,q_cut,q_cut_style,algorithm,folder,**kwar
     for cbed in cbeds:
         tmp = np.squeeze(np.load(folder+cbed))
         tmp *= dist_mask*f_int**4
-        np.save(cbed[0:-4]+'_crop',imageCrop(tmp))
+        np.save(folder+cbed[0:-4]+'_crop',imageCrop(tmp))
 
 
 def getLambda(E0):
