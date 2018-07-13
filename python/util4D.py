@@ -212,8 +212,7 @@ def processCBED(cell_dim,real_pixel,E0,q_cut,q_cut_style,algorithm,folder,**kwar
     else:
         raise ValueError('Check value for q_cut_style, should be \'circ\' or \'rect\'')
 
-    cbeds = [img for img in os.listdir(folder) if 'FPavg.npy' in img]
-    a = 1
+    cbeds = [img for img in os.listdir(folder) if (('FPavg.npy' in img) and ('slice' + str(kwargs['slice']) in img))]
     for cbed in cbeds:
         tmp = np.squeeze(np.load(folder+cbed))
         tmp *= dist_mask*f_int**4
