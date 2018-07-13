@@ -31,12 +31,12 @@ def prepareCBED(N):
     util4D.createPACBED(radii,centers,out_name,cur_out_ext,array_size,cbedArray)
 
     scale_factors = [1, 5, 10, 50, 100]
-    pacbeds = [pacbed for pacbed in os.listdir() if (('Sr_PACBED' in pacbed) and ('_'+str(N)+'.npy') in pacbed)]
+    pacbeds = [pacbed for pacbed in os.listdir(folder) if (('Sr_PACBED' in pacbed) and ('_'+str(N)+'.npy') in pacbed)]
     for pacbed in pacbeds:
         tmp = np.load(pacbed)
         for scale in scale_factors:
                 noisy = util4D.addPoissonNoise(tmp,scale)
-                np.save(pacbed[:-4]+'_noise'+str(scale),noisy)
+                np.save(folder+pacbed[:-4]+'_noise'+str(scale),noisy)
     
 
 #def applyNoise(pacbeds,scale_factors):

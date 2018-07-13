@@ -54,7 +54,7 @@ def get4Darray(base_name,base_ext,map_lim,imsize):
 
     return output
 
-def createPACBED(radii,centers,out_name,out_ext,array_size,origCBEDarray):
+def createPACBED(radii,centers,out_name,out_ext,array_size,origCBEDarray,folder):
     imsize = tuple(origCBEDarray.shape[-2:])
 
     origCBEDarray = np.reshape(origCBEDarray,(np.prod(array_size),imsize[0],imsize[1]))
@@ -75,7 +75,7 @@ def createPACBED(radii,centers,out_name,out_ext,array_size,origCBEDarray):
             pacbed /= sum(mask)
 
             f_name = out_name+'_'+str(cent_x) + '_' + str(cent_y) + '_' + str(radius) + out_ext
-            np.save(f_name,pacbed)
+            np.save(folder+f_name,pacbed)
 
 def effSourceSize(source_size,pixel_size,base_name,base_ext,array_size):
     imsize = (np.load(base_name+'_X0_Y0'+base_ext)).shape
