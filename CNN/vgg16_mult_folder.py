@@ -20,9 +20,9 @@ def main():
     #K.tensorflow_backend._get_available_gpus()
     #sess = tf.Session(config=tf.ConfigProto(log_device_placement=True))
 
-    input_base = '/srv/home/lerandc/CNN/new_set/'
+    input_base = '/srv/home/lerandc/outputs/712_STO/'
     input_sub_folder = ['0_0/','05_0/','025_025/','1_0/','1_1/','2_0/','2_2/','3_0/']    
-    result_path =  '/srv/home/lerandc/CNN/new_set/results/'
+    result_path =  '/srv/home/lerandc/CNN/models/071518_allNoise/'
 
     x_train_list = []
     y_train_list = []
@@ -31,10 +31,10 @@ def main():
 
     for current_folder in input_sub_folder:
         input_folder = input_base + current_folder
-        input_images = [image for image in os.listdir(input_folder) if 'mat' in image]
+        input_images = [image for image in os.listdir(input_folder) if 'Sr_PACBED' in image]
 
         for image in input_images:
-            if ('noise100' in image):
+            if ('.npy' in image):
                 #print(image)
                 cmp = image.split('_')
                 #print(cmp)
@@ -46,9 +46,13 @@ def main():
                 #r = int(cmp[0].split('-')[1][1:])
                 #if r < 8:
 
-                img_array = sio.loadmat(input_folder + image)
-                fields = sio.whosmat(input_folder + image)
-                img = img_array[fields[0][0]]
+                #img_array = sio.loadmat(input_folder + image)
+                #fields = sio.whosmat(input_folder + image)
+                #img = img_array[fields[0][0]]
+
+                img = np.load(input_folder + image).astype(dtype=np.float64)
+                img = scale_range(img,0,1)
+                img = img.astype(dtype=np.float32)
                 #print(img)
                 #print(fields)
                 img_size = img.shape[0]
@@ -263,8 +267,11 @@ def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, i
     new_model.save(result_path + 'FinalModel.h5')  # save the final model for future loading and prediction
 
 
-
-
+def scale_range (input, min, max):
+    input += -(np.min(input))
+    input /= np.max(input) / (max - min)
+    input += min
+    return input    
 
 # step 4 make predictions using experiment results
 
