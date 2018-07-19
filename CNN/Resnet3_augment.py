@@ -36,7 +36,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]=str(sys.argv[1])
 
 batch_size = 32
 num_classes = 52
-epochs = 12
+epochs = 20
 
 # input image dimensions
 img_rows, img_cols = 157, 157
@@ -46,7 +46,7 @@ img_rows, img_cols = 157, 157
 
 input_base = '/srv/home/lerandc/outputs/712_STO/'
 input_sub_folder = ['0_0/','05_0/','025_025/','1_0/','1_1/','2_0/','2_2/','3_0/']    
-result_path =  '/srv/home/lerandc/CNN/models/071718_resnet/noise100/'
+result_path =  '/srv/home/lerandc/CNN/models/071818_resnet/scratch_augment_noise100/'
 
 x_train_list = []
 y_train_list = []
@@ -88,48 +88,51 @@ x_train = np.concatenate([arr[np.newaxis] for arr in x_train_list])
 y_train = to_categorical(y_train_list, num_classes=nb_class)
 np.save(result_path + 'y_train.npy', y_train)
 
-# if K.image_data_format() == 'channels_first':
-#     x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
-#     x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
-#     input_shape = (1, img_rows, img_cols)
-# else:
-#     x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
-#     x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
-#     input_shape = (img_rows, img_cols, 1)
 
 x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
 input_shape = (1, img_rows, img_cols)
 x_train = x_train.astype('float32')
-# x_test = x_test.astype('float32')
-# x_train /= 255
-# x_test /= 255
+
 
 print('x_train shape:', x_train.shape)
 print('x_train type:', type(x_train))
 print(x_train.shape[0], 'train samples')
-# print(x_test.shape[0], 'test samples')
-
-# convert class vectors to binary class matrices
-# y_train = keras.utils.to_categorical(y_train, num_classes)
-# y_test = keras.utils.to_categorical(y_test, num_classes)
-
 print(input_shape)
-# print(x_test.shape)
+
 
 # 3,4,6,3 correspond to resnet 50 according to definition in Resnet
 # 3,4,23,3 corrspond to resnet 101
 model = ResnetBuilder.build(input_shape, 52, 'bottleneck', [3, 4, 6, 4])
 
-
 model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 
-model.fit(x_train, y_train,
-          batch_size=batch_size,
-          epochs=epochs,
-          verbose=2,
-          validation_data=)
+datagen = ImageDataGenerator(
+    featurewise_center=True,
+    rotation_range=90,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    zoom_range=0.2,
+    horizontal_flip=1,
+    vertical_flip=1,
+    shear_range=0.05)
+
+datagen.fit(x_train)
+
+generator = datagen.flow(
+    x_train,
+    y_train,
+    batch_size=batch_size,
+    shuffle=True)
+
+validation_generator = datagen.flow(
+    x_train,
+    y_train,
+    batch_size=batch_size,
+    shuffle=True)
+
+model.fit_generator(generator,epochs=epochs,steps_per_epoch=len(x_train) / 32,validation_data=validation_generator,validation_steps=(len(x_train)//5)//32, verbose=2)
 # score = model.evaluate(x_test, y_test, verbose=0)
 # print('Test loss:', score[0])
 # print('Test accuracy:', score[1])

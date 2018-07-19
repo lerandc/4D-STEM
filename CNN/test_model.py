@@ -13,25 +13,11 @@ from PIL import Image
 
 def main():
     #establish paths 
-    input_folder = '/srv/home/lerandc/CNN/new_set/0_0/'
-    result_path =  '/srv/home/lerandc/CNN/new_set/results/'
-    #load a test image
-    
-    """
-    image = 'Sr_PACBED_7_7_7_12_noise50.mat'
-    img_array = sio.loadmat(input_folder + image)
-    fields = sio.whosmat(input_folder + image)
-    img = img_array[fields[0][0]]
-    img_size = img.shape[0]
-    sx, sy = img.shape[0], img.shape[1]
-    new_channel = np.zeros((img_size, img_size))
-    img = np.dstack((img, new_channel, new_channel))
-    img = np.reshape(img, (1, sx, sy, 3))
-    """
+    #load a test imag
 
-    input_base = '/srv/home/lerandc/Experimental Sr PACBED/Sr-PACBEDs/'
+    input_base = '/srv/home/lerandc/Experimental Sr PACBED/S8-20180717/S8/'
     input_sub_folder = [''] #['Sr_30pm/','Sr_40pm/','Sr_50pm/']    
-    result_path =  '/srv/home/lerandc/CNN/new_set/results/7618 noise100/'
+    result_path =  '/srv/home/lerandc/CNN/models/071618_ind_noises/noiseless/'
 
     x_train_list = []
     y_train_list = []
@@ -46,12 +32,12 @@ def main():
         input_images = [image for image in os.listdir(input_folder) if 'mat' in image]
 
         for image in input_images:
-            if not ('noise100' in image):
+            if ('SrPACBED_Stack_R8' in image):
                 #print(image)
                 #cmp = image.split('_')
                 #print(cmp)
                 #print(cmp[-1][:-4])
-                label = int(13)
+                label = int(19)
                 #label = int( int(cmp[-1][:-4])/10 + 0.5 )
                 #int_radius.append(current_folder)
                 """
@@ -73,13 +59,13 @@ def main():
                 fields = sio.whosmat(input_folder + image)
                 img_array = img_array[fields[0][0]]
                 img_array = img_array.astype('double')
-                for i in range(46):
+                for i in range(32):
                     img = img_array[:,:,i]
                     #img = np.load(input_folder+image)
-                    img = sm.imresize(np.squeeze(img),(195, 195))
+                    img = sm.imresize(np.squeeze(img),(157, 157))
                     img = img.astype('double')
                     #print(img.dtype)
-                    img = scale_range(img, 0, 120)
+                    img = scale_range(img, 0, 1)
                     #print(img)
                     #print(fields)
                     img_size = img.shape[0]
@@ -101,13 +87,14 @@ def main():
     loss = 'categorical_crossentropy'
     model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 
-    p_classes = model.predict_classes(np.asarray(x_train_list), batch_size=10)
-    p_arrays = model.predict(np.asarray(x_train_list), batch_size=10)
+    p_classes = model.predict_classes(np.asarray(x_train_list), batch_size=32)
+    p_arrays = model.predict(np.asarray(x_train_list), batch_size=32)
     y_list = np.asarray(y_train_list)
     p_class_list = np.asarray(p_classes)
+    print(p_class_list)
     #tilt = np.asarray(tilt)
     int_radius = np.asarray(int_radius)
-    sio.savemat('exp_results2.mat',{'ylist':y_list,'p_class_list':p_class_list,'p_arrays':p_arrays})#,'int_radius':int_radius})#,'tilt':tilt,'int_radius':int_radius,'noise_level':noise_level})
+    #sio.savemat('exp_results2.mat',{'ylist':y_list,'p_class_list':p_class_list,'p_arrays':p_arrays})#,'int_radius':int_radius})#,'tilt':tilt,'int_radius':int_radius,'noise_level':noise_level})
     
     
     """

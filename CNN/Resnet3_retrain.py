@@ -6,6 +6,7 @@ import keras
 import numpy as np
 from keras.datasets import mnist
 from keras.models import Sequential
+from keras.models import load_model
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras import backend as K
@@ -36,7 +37,7 @@ os.environ["CUDA_VISIBLE_DEVICES"]=str(sys.argv[1])
 
 batch_size = 32
 num_classes = 52
-epochs = 12
+epochs = 30
 
 # input image dimensions
 img_rows, img_cols = 157, 157
@@ -46,7 +47,8 @@ img_rows, img_cols = 157, 157
 
 input_base = '/srv/home/lerandc/outputs/712_STO/'
 input_sub_folder = ['0_0/','05_0/','025_025/','1_0/','1_1/','2_0/','2_2/','3_0/']    
-result_path =  '/srv/home/lerandc/CNN/models/071718_resnet/noise100/'
+result_path =  '/srv/home/lerandc/CNN/models/071818_resnet/retrain_augment_noise100/'
+model_path = '/srv/home/lerandc/CNN/models/071718_resnet/noise100/'
 
 x_train_list = []
 y_train_list = []
@@ -118,18 +120,37 @@ print(input_shape)
 
 # 3,4,6,3 correspond to resnet 50 according to definition in Resnet
 # 3,4,23,3 corrspond to resnet 101
-model = ResnetBuilder.build(input_shape, 52, 'bottleneck', [3, 4, 6, 4])
-
+model = load_model(model_path + 'FinalModel_resnet50.h5')
 
 model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 
-model.fit(x_train, y_train,
-          batch_size=batch_size,
-          epochs=epochs,
-          verbose=2,
-          validation_data=)
+datagen = ImageDataGenerator(
+    featurewise_center=True,
+    rotation_range=90,
+    width_shift_range=0.1,
+    height_shift_range=0.1,
+    zoom_range=0.2,
+    horizontal_flip=1,
+    vertical_flip=1,
+    shear_range=0.05)
+
+datagen.fit(x_train)
+
+generator = datagen.flow(
+    x_train,
+    y_train,
+    batch_size=batch_size,
+    shuffle=True)
+
+validation_generator = datagen.flow(
+    x_train,
+    y_train,
+    batch_size=batch_size,
+    shuffle=True)
+
+model.fit_generator(generator,epochs=epochs,steps_per_epoch=len(x_train) / 32,validation_data=validation_generator,validation_steps=(len(x_train)//5)//32, verbose=2)
 # score = model.evaluate(x_test, y_test, verbose=0)
 # print('Test loss:', score[0])
 # print('Test accuracy:', score[1])

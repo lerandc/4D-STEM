@@ -23,59 +23,47 @@ from keras.callbacks import EarlyStopping
 import numpy as np
 import time
 
-def scale_range (input, min, max):
-    input += -(np.min(input))
-    input /= np.max(input) / (max - min)
-    input += min
-    return input    
-
 start_time = time.time()
-
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"   # see issue #152
-os.environ["CUDA_VISIBLE_DEVICES"]=str(sys.argv[1])
 
 batch_size = 32
 num_classes = 52
 epochs = 12
 
 # input image dimensions
-img_rows, img_cols = 157, 157
+img_rows, img_cols = 198, 198
 
 
 # only load training data, let Keras automaticlly split it into training and testing part
 
-input_base = '/srv/home/lerandc/outputs/712_STO/'
-input_sub_folder = ['0_0/','05_0/','025_025/','1_0/','1_1/','2_0/','2_2/','3_0/']    
-result_path =  '/srv/home/lerandc/CNN/models/071718_resnet/noise100/'
+input_folder = '/srv/home/lerandc/CNN/s8_ph0_Ti_pacbed_1111_npy_noise_peak_10/'
+# input_folder = 'G:/jfeng_MSCdata_data/cbed/s8_0_0_Ti_pacbed_r7_npy/' # small size testing dataset with 5184 images
+result_path = '/srv/home/lerandc/CNN/s8_ph0_Ti_pacbed_1111_npy_noise_peak_10/results/'
+# result_path = 'G:/jfeng_MSCdata_data/cbed/s8_0_0_Ti_pacbed_r7_npy/results/'
+input_images = [image for image in os.listdir(input_folder) if 'npy' in image]
 
 x_train_list = []
 y_train_list = []
 
 sx, sy = 0, 0
 
-for current_folder in input_sub_folder:
-    input_folder = input_base + current_folder
-    input_images = [image for image in os.listdir(input_folder) if 'Sr_PACBED' in image]
-
-    for image in input_images:
-        if (('noise100' in image)):
-            cmp = image.split('_')
-            if ('noise' in image):
-                label = int(cmp[-2][:])
-            else:
-                label = int(cmp[-1][:-4])  
-
-            img = np.load(input_folder + image).astype(dtype=np.float64)
-            img = scale_range(img,0,1)
-            img = img.astype(dtype=np.float32)
-            #print(img)
-            #print(fields)
-            img_size = img.shape[0]
-            sx, sy = img.shape[0], img.shape[1]
-            x_train_list.append(img)
-            # Ti-r7-3-0_9_30.npy
-            # x_train_list.append(img)
-            y_train_list.append(label)
+for image in input_images:
+    cmp = image.split('_')
+    label = int(cmp[2][:-4])
+    r = int(cmp[0].split('-')[1][1:])
+    # r = 7
+    # cmp = image.split('_')
+    # cmp = cmp[3].split('.')
+    # label = cmp[0]
+    if r < 8:
+        img = np.load(input_folder + image)
+        # img_size = img.shape[0]
+        sx, sy = img.shape[0], img.shape[1]
+        # new_channel = np.zeros((img_size, img_size))
+        # img_stack = np.dstack((img, new_channel, new_channel))
+        # x_train_list.append(img_stack)
+        # Ti-r7-3-0_9_30.npy
+        x_train_list.append(img)
+        y_train_list.append(label)
 
 nb_train_samples = len(x_train_list)
 print('Image loaded')
@@ -86,7 +74,7 @@ print(nb_train_samples)
 nb_class = len(set(y_train_list))
 x_train = np.concatenate([arr[np.newaxis] for arr in x_train_list])
 y_train = to_categorical(y_train_list, num_classes=nb_class)
-np.save(result_path + 'y_train.npy', y_train)
+np.save(input_folder + 'results/y_train.npy', y_train)
 
 # if K.image_data_format() == 'channels_first':
 #     x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
@@ -128,13 +116,12 @@ model.compile(loss=keras.losses.categorical_crossentropy,
 model.fit(x_train, y_train,
           batch_size=batch_size,
           epochs=epochs,
-          verbose=2,
-          validation_data=)
+          verbose=1)
 # score = model.evaluate(x_test, y_test, verbose=0)
 # print('Test loss:', score[0])
 # print('Test accuracy:', score[1])
 
-model.save(result_path +'FinalModel_resnet50.h5')
+model.save('/srv/home/lerandc/CNN/s8_ph0_Ti_pacbed_1111_npy_noise_peak_10/results/FinalModel_resnet50.h5')
 
 print('Total computing time is: ')
 print(int((time.time() - start_time) * 100) / 100.0)
