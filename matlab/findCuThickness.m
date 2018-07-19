@@ -4,9 +4,9 @@ clearvars
 close all
 
 files = dir('*.mrc'); files = {files.name}';
-base = 'slice';
-ext = '_73_Cu_fine_search_high_angle.mrc';
-%ext = '_FCC_Cu_111_350nm_8FP.mrc';
+base = 'multislice_2Doutput_slice';
+%ext = '_73_Cu_fine_search_high_angle.mrc';
+ext = '_711_Cu_fine_search.mrc';
 
 sort_cell = regexp(files,strcat(base,'\d*+'),'match','once');
 file_cell = IDfiles(sort_cell);
@@ -15,10 +15,10 @@ test_im_size = getImSize(strcat(file_cell{1},ext));
 sigma = (90/8.8052)/2.355;
 gauss_kernel = fspecial('gaussian',[test_im_size(1) test_im_size(2)], sigma);
 %for 3D output
-annular_range = [73,350]; d_step = 1; %mrads for both
-test_array = processTestImages(file_cell,ext,gauss_kernel,test_im_size,annular_range,d_step);
+%annular_range = [73,350]; d_step = 1; %mrads for both
+%test_array = processTestImages(file_cell,ext,gauss_kernel,test_im_size,annular_range,d_step);
 
-%test_array = processTestImages(file_cell,ext,gauss_kernel,test_im_size);
+test_array = processTestImages(file_cell,ext,gauss_kernel,test_im_size);
 %test_array2 = processTestImages(file_cell,ext,gauss_kernel,im_size,annular_range,d_step);
 
 ref_array = loadImageFromMat('ref_cell.mat');
@@ -31,7 +31,8 @@ radius = [13 14 15 16 17 18]'; %in pixels for the reference image,manually choos
 test_px_size = 0.088052; %pixel step sizes in angstroms
 ref_px_size = 0.044026;
 %test_centers = [20, 20]; %for 350 max
-test_centers = [14, 25]; %for 475 max
+%test_centers = [14, 25]; %for 475 max
+test_centers = [19.5, 21.5]; %for 475 max
 test_centers = generateCenters(test_centers,[1.5 1.5]);
 ref_centers = [65, 56;
                37, 36;
@@ -51,8 +52,8 @@ ref_centers = generateCenters(ref_centers,[3 3]);
 [test_mask, ref_mask] = setUpMasks(radius,test_px_size,ref_px_size,test_centers,ref_centers,test_im_size,ref_im_size);
 %%
 %prepare reference data
-rough_scale = 3.2862e4;
-%rough_scale = 3.9134e4;
+%rough_scale = 3.2862e4;
+rough_scale = 3.9134e4;
 offset = 9.8969e3; %9.8761e3; 9.8969e3;
 %they used following (approx)
 % rough_scale = 4.189905e4;
