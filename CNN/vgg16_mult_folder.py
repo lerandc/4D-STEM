@@ -86,18 +86,18 @@ def main():
             max_index = cur
     max_index = max_index + 1
 
-    batch_size = 36
+    batch_size = 32
     # step 1
     save_bottleneck_features(x_train, y_train, batch_size, nb_train_samples,result_path)
 
     # step 2
     epochs = 12
-    batch_size = 36  # batch size 32 works for the fullsize simulation library which has 19968 total files, total number of training file must be integer times of batch_size
+    batch_size = 32  # batch size 32 works for the fullsize simulation library which has 19968 total files, total number of training file must be integer times of batch_size
     train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_folder, result_path)
 
     # step 3
     epochs = 50
-    batch_size = 36
+    batch_size = 32
     fine_tune(x_train, y_train, sx, sy, max_index, epochs, batch_size, input_folder, result_path)
 
     print('Total computing time is: ')
@@ -185,7 +185,7 @@ def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, i
     top_model.add(Flatten(input_shape=model.output_shape[1:]))
     top_model.add(Dense(256, activation='relu'))
     #top_model.add(Dropout(0.3))
-    top_model.add(Dense(52, activation='sigmoid'))
+    top_model.add(Dense(91, activation='sigmoid'))
 
     top_model.load_weights(result_path + 'bottleneck_fc_model.h5')
 
@@ -215,7 +215,7 @@ def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, i
         rotation_range=90,
         width_shift_range=0.1,
         height_shift_range=0.1,
-        zoom_range=0.2,
+        zoom_range=0.1,
         horizontal_flip=1,
         vertical_flip=1,
         shear_range=0.05)
