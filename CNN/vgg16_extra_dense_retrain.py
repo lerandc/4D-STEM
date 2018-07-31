@@ -3,7 +3,7 @@
 #Last comment date: 7-31-2018
 
 #Usage is as follows:
-#python pretrained_inception.py ID
+#python vgg16_extra_dense_retrain.py ID
 #where ID is the target GPU device (0-3)import os
 
 import sys
@@ -119,6 +119,7 @@ def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, i
     csv_logger_finetune = callbacks.CSVLogger(fineture_log)
     earlystop = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=15, verbose=1, mode='auto')
 
+    #create data generators for training model
     datagen = ImageDataGenerator(
         featurewise_center=True,
         rotation_range=90,

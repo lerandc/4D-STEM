@@ -170,7 +170,6 @@ def train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_fold
     loss = 'categorical_crossentropy'
     model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
     
-
     bottleneck_log = result_path + 'training_' + str(max_index) + '_bnfeature_log.csv'
     csv_logger_bnfeature = callbacks.CSVLogger(bottleneck_log)
     earlystop = EarlyStopping(monitor='val_acc', min_delta=0.0001, patience=3, verbose=1, mode='auto')

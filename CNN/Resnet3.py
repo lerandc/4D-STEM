@@ -3,7 +3,7 @@
 #Last comment date: 7-31-2018
 
 #Usage is as follows:
-#python pretrained_resnet50.py ID
+#python Resnet3.py ID
 #where ID is the target GPU device (0-3)
 
 '''Adapt previous resnet example for MNIST data to CBED simulations
