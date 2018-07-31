@@ -3,7 +3,7 @@
 #Last comment date: 7-31-2018
 
 #Usage is as follows:
-#python vgg16_mult_folder.py ID
+#python pretrained_inception.py ID
 #where ID is the target GPU device (0-3)
 
 import os
@@ -28,7 +28,7 @@ def main():
     #establish target paths for the input data
     input_base = '/srv/home/lerandc/outputs/712_STO/'
     input_sub_folder = ['0_0/','05_0/','025_025/','1_0/','1_1/','2_0/','2_2/','3_0/']    
-    result_path =  '/srv/home/lerandc/CNN/models/071718_ind_noises_scale100/noise100/'
+    result_path =  '/srv/home/lerandc/CNN/models/072018_inception/'
 
     x_train_list = []
     y_train_list = []
@@ -46,9 +46,9 @@ def main():
                 label = int(cmp[-2][:])
             else:
                 label = int(cmp[-1][:-4])  
-                 
+
             #in this logic, I usually specified which noise level I wanted, as the files were named uniquely     
-            if (('noise100' in image) and (14 < label < 36)):
+            if (('noise100' in image)):
 
                 #load image as double float, scale it to (0,1) range, then convert back to single float
                 img = np.load(input_folder + image).astype(dtype=np.float64)
@@ -71,6 +71,7 @@ def main():
     print('training number: ')
     print(nb_train_samples)
     nb_class = len(set(y_train_list))
+
     #creates numpy input tensor as required by keras, with shape N x sx x sy x 3
     x_train = np.concatenate([arr[np.newaxis] for arr in x_train_list])
 
@@ -91,7 +92,7 @@ def main():
 
     batch_size = 32
     # step 1, create bottle neck features
-    save_bottleneck_features(x_train, y_train, batch_size, nb_train_samples,result_path)
+    save_bottleneck_features(x_train, y_train, sx, sy, batch_size, nb_train_samples, result_path)
 
     # step 2, train top model to interpret output from model base (ie, convolutional base in VGG16)
     epochs = 12
@@ -107,10 +108,10 @@ def main():
     print(int((time.time() - start_time) * 100) / 100.0)
 
 
-def save_bottleneck_features(x_train, y_train, batch_size, nb_train_samples,result_path):
+def save_bottleneck_features(x_train, y_train, sx, sy, batch_size, nb_train_samples, result_path):
     #creates set of bottleneck features by running input data through data generator once and saving base outputs
     #load pretrained model, excluding fully connected layers at end
-    model = applications.VGG16(include_top=False, weights='imagenet')
+    model = applications.InceptionV3(include_top=False, weights='imagenet',input_shape=(sx,sy,3))
     print('before featurewise center')
     
     #establish data generator
@@ -124,14 +125,13 @@ def save_bottleneck_features(x_train, y_train, batch_size, nb_train_samples,resu
         vertical_flip=1,
         shear_range=0.05)
  
-
     datagen = ImageDataGenerator(
         featurewise_center=True)
 
     #datagen needs to fit to images first to deterime some paramters for featurewise centering
     datagen.fit(x_train)
     print('made it past featurewise center')
-
+    
     #set generator to flow outputs from set of training data
     generator = datagen.flow(
         x_train,
@@ -151,21 +151,22 @@ def train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_fold
     #load bottleneck predictions 
     train_data = np.load(result_path + 'bottleneck_features_train.npy')
     train_labels = y_train
-
     print(train_data.shape, train_labels.shape)
 
     #make top model
     model = Sequential()
     model.add(Flatten(input_shape=train_data.shape[1:]))
+    model.add(Dropout(0.3))
     model.add(Dense(256, activation='relu'))
-    #model.add(Dropout(0.3))
-    model.add(Dense(nb_class, activation='sigmoid'))
+    model.add(Dropout(0.3))
+    model.add(Dense(nb_class, activation='softmax'))
 
     #set optimizer settings and compile model
     lr = 0.005
     decay = 1e-6
     momentum = 0.9
-    optimizer = optimizers.SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
+    #optimizer = optimizers.SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
+    optimizer = optimizers.Adadelta()
     loss = 'categorical_crossentropy'
     model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
     
@@ -186,40 +187,38 @@ def train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_fold
         log.write('momentum: ' + str(momentum) + '\n')
         log.write('loss: ' + loss + '\n')
 
+    #save top model weights
     model.save_weights(result_path + 'bottleneck_fc_model.h5')
 
 def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, input_folder, result_path):
     print(train_data.shape, train_labels.shape)
 
     #load full model with imagenet weights
-    model = applications.VGG16(weights='imagenet', include_top=False, input_shape=(sx, sy, 3))
+    model = applications.InceptionV3(weights='imagenet', include_top=False, input_shape=(sx, sy, 3))
     print('Model loaded')
 
     #create top model
     top_model = Sequential()
     top_model.add(Flatten(input_shape=model.output_shape[1:]))
+    top_model.add(Dropout(0.3))
     top_model.add(Dense(256, activation='relu'))
-    #top_model.add(Dropout(0.3))
-    top_model.add(Dense(91, activation='sigmoid'))
+    top_model.add(Dropout(0.3))
+    top_model.add(Dense(52, activation='softmax'))
 
     #load top model weights
     top_model.load_weights(result_path + 'bottleneck_fc_model.h5')
 
     #join models
     new_model = Sequential()
-    for l in model.layers:
-        new_model.add(l)
-    #new_model.add(Dropout(0.3))
+    new_model.add(model)
     new_model.add(top_model)
-
-    # for layer in new_model.layers[:6]:
-    # layer.trainable = False
 
     #optimizer settings
     lr = 0.0001
     decay = 1e-6
     momentum = 0.9
-    optimizer = optimizers.SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
+    #optimizer = optimizers.SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
+    optimizer = optimizers.Adadelta()
     loss = 'categorical_crossentropy'
     new_model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
 
@@ -252,7 +251,7 @@ def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, i
         batch_size=batch_size,
         shuffle=True)
 
-    new_model.fit_generator(generator,epochs=epochs,steps_per_epoch=len(train_data) / 32,validation_data=validation_generator,validation_steps=(len(train_data)//5)//32,
+    new_model.fit_generator(generator,epochs=epochs,steps_per_epoch=len(train_data)//batch_size,validation_data=validation_generator,validation_steps=len(train_data)//batch_size//5,
             callbacks=[csv_logger_finetune, earlystop],verbose=2)
 
     with open(fineture_log, 'a') as log:

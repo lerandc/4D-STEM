@@ -1,5 +1,10 @@
-import ase.io
+#Author: Jason Maldonis
+#Comments by: Luis Rangel DaCosta
+#Last comment date: 7-31-18
+#Python file defining a function to create an ASE atoms object from an XYZ file
+#Taken from StructOpt
 
+import ase.io
 
 def read_xyz(filename, index=None, format=None, **kwargs):
     """Reads an xyz file into an ASE Atoms object and returns it."""

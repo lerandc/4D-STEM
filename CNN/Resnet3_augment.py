@@ -1,3 +1,11 @@
+#Adaptation of script for creating Resnet model to make predictions on experimental PACBEDs
+#Author: Luis Rangel DaCosta, lerandc@umich.edu, orig. script from Chenyu
+#Last comment date: 7-31-2018
+
+#Usage is as follows:
+#python Resnet3_augment.py ID
+#where ID is the target GPU device (0-3)
+
 '''Adapt previous resnet example for MNIST data to CBED simulations
 '''
 
@@ -53,6 +61,7 @@ y_train_list = []
 
 sx, sy = 0, 0
 
+#load input data into array
 for current_folder in input_sub_folder:
     input_folder = input_base + current_folder
     input_images = [image for image in os.listdir(input_folder) if 'Sr_PACBED' in image]
@@ -68,13 +77,10 @@ for current_folder in input_sub_folder:
             img = np.load(input_folder + image).astype(dtype=np.float64)
             img = scale_range(img,0,1)
             img = img.astype(dtype=np.float32)
-            #print(img)
-            #print(fields)
+
             img_size = img.shape[0]
             sx, sy = img.shape[0], img.shape[1]
             x_train_list.append(img)
-            # Ti-r7-3-0_9_30.npy
-            # x_train_list.append(img)
             y_train_list.append(label)
 
 nb_train_samples = len(x_train_list)
@@ -84,7 +90,11 @@ print(sx, sy)
 print('training number: ')
 print(nb_train_samples)
 nb_class = len(set(y_train_list))
+
+#creates numpy input tensor as required by keras, with shape N x sx x sy x 1
 x_train = np.concatenate([arr[np.newaxis] for arr in x_train_list])
+
+#performs one-hot encoding on labels, requirement for training categorical models
 y_train = to_categorical(y_train_list, num_classes=nb_class)
 np.save(result_path + 'y_train.npy', y_train)
 
@@ -102,12 +112,15 @@ print(input_shape)
 
 # 3,4,6,3 correspond to resnet 50 according to definition in Resnet
 # 3,4,23,3 corrspond to resnet 101
+#create Resnet Model
 model = ResnetBuilder.build(input_shape, 52, 'bottleneck', [3, 4, 6, 4])
 
+#compile with Adadelta optimizer
 model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
 
+#establish data generator
 datagen = ImageDataGenerator(
     featurewise_center=True,
     rotation_range=90,
@@ -133,9 +146,6 @@ validation_generator = datagen.flow(
     shuffle=True)
 
 model.fit_generator(generator,epochs=epochs,steps_per_epoch=len(x_train) / 32,validation_data=validation_generator,validation_steps=(len(x_train)//5)//32, verbose=2)
-# score = model.evaluate(x_test, y_test, verbose=0)
-# print('Test loss:', score[0])
-# print('Test accuracy:', score[1])
 
 model.save(result_path +'FinalModel_resnet50.h5')
 

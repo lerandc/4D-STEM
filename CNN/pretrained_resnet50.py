@@ -3,7 +3,7 @@
 #Last comment date: 7-31-2018
 
 #Usage is as follows:
-#python vgg16_mult_folder.py ID
+#python pretrained_resnet50.py ID
 #where ID is the target GPU device (0-3)
 
 import os
@@ -28,18 +28,19 @@ def main():
     #establish target paths for the input data
     input_base = '/srv/home/lerandc/outputs/712_STO/'
     input_sub_folder = ['0_0/','05_0/','025_025/','1_0/','1_1/','2_0/','2_2/','3_0/']    
-    result_path =  '/srv/home/lerandc/CNN/models/071718_ind_noises_scale100/noise100/'
+    result_path =  '/srv/home/lerandc/CNN/models/072018_pretrained_resnet/'
 
     x_train_list = []
     y_train_list = []
 
     sx, sy = 0, 0
 
-    #load input data into array
+    #load input data into  array
     for current_folder in input_sub_folder:
         input_folder = input_base + current_folder
         input_images = [image for image in os.listdir(input_folder) if 'Sr_PACBED' in image]
 
+        #in this logic, I usually specified which noise level I wanted, as the files were named uniquely     
         for image in input_images:
             cmp = image.split('_')
             if ('noise' in image):
@@ -47,19 +48,23 @@ def main():
             else:
                 label = int(cmp[-1][:-4])  
                  
-            #in this logic, I usually specified which noise level I wanted, as the files were named uniquely     
-            if (('noise100' in image) and (14 < label < 36)):
+            if (('noise100' in image)):
 
                 #load image as double float, scale it to (0,1) range, then convert back to single float
                 img = np.load(input_folder + image).astype(dtype=np.float64)
                 img = scale_range(img,0,1)
                 img = img.astype(dtype=np.float32)
 
-                #grab shape of image, then add zero channels to make sx x sy x 3 image shape
-                #then create stack of images
-                img_size = img.shape[0]
+                #pretrained resnet has default image size minimum of 197 x 197 pixels
+                #grab image shape and pad to sufficient size
+                orig_img_size = img.shape[0]
+                pad_length = int(np.ceil((197-orig_img_size)/2))
+                img = np.pad(img,pad_length,'constant')
+
+                #creat image stack
+                final_img_size = img.shape[0]
                 sx, sy = img.shape[0], img.shape[1]
-                new_channel = np.zeros((img_size, img_size))
+                new_channel = np.zeros((final_img_size, final_img_size))
                 img_stack = np.dstack((img, new_channel, new_channel))
                 x_train_list.append(img_stack)
                 y_train_list.append(label)
@@ -71,9 +76,10 @@ def main():
     print('training number: ')
     print(nb_train_samples)
     nb_class = len(set(y_train_list))
+
     #creates numpy input tensor as required by keras, with shape N x sx x sy x 3
     x_train = np.concatenate([arr[np.newaxis] for arr in x_train_list])
-
+    
     #performs one-hot encoding on labels, requirement for training categorical models
     y_train = to_categorical(y_train_list, num_classes=nb_class)
     print('Size of image array in bytes')
@@ -91,9 +97,9 @@ def main():
 
     batch_size = 32
     # step 1, create bottle neck features
-    save_bottleneck_features(x_train, y_train, batch_size, nb_train_samples,result_path)
+    save_bottleneck_features(x_train, y_train,sx,sy,batch_size, nb_train_samples,result_path)
 
-    # step 2, train top model to interpret output from model base (ie, convolutional base in VGG16)
+    # step 2, train top model to interpret output from model base (ie, convolutional base in VGG16) 
     epochs = 12
     batch_size = 32  #batch size should be integer divisor of number of images in training data set
     train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_folder, result_path)
@@ -107,10 +113,10 @@ def main():
     print(int((time.time() - start_time) * 100) / 100.0)
 
 
-def save_bottleneck_features(x_train, y_train, batch_size, nb_train_samples,result_path):
+def save_bottleneck_features(x_train, y_train, sx,sy, batch_size,nb_train_samples,result_path):
     #creates set of bottleneck features by running input data through data generator once and saving base outputs
     #load pretrained model, excluding fully connected layers at end
-    model = applications.VGG16(include_top=False, weights='imagenet')
+    model = applications.ResNet50(include_top=False, weights='imagenet',input_shape=(sx,sy,3))
     print('before featurewise center')
     
     #establish data generator
@@ -148,10 +154,9 @@ def save_bottleneck_features(x_train, y_train, batch_size, nb_train_samples,resu
             bottleneck_features_train)
 
 def train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_folder, result_path):
-    #load bottleneck predictions 
+    #load bottleneck predictions
     train_data = np.load(result_path + 'bottleneck_features_train.npy')
     train_labels = y_train
-
     print(train_data.shape, train_labels.shape)
 
     #make top model
@@ -161,13 +166,15 @@ def train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_fold
     #model.add(Dropout(0.3))
     model.add(Dense(nb_class, activation='sigmoid'))
 
-    #set optimizer settings and compile model
+
+    #set optimzer settings and compile model
     lr = 0.005
     decay = 1e-6
     momentum = 0.9
     optimizer = optimizers.SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
     loss = 'categorical_crossentropy'
     model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
+    # model.compile(optimizer=sgd, loss='mean_squared_error', metrics=['accuracy'])
     
     bottleneck_log = result_path + 'training_' + str(max_index) + '_bnfeature_log.csv'
     csv_logger_bnfeature = callbacks.CSVLogger(bottleneck_log)
@@ -192,7 +199,7 @@ def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, i
     print(train_data.shape, train_labels.shape)
 
     #load full model with imagenet weights
-    model = applications.VGG16(weights='imagenet', include_top=False, input_shape=(sx, sy, 3))
+    model = applications.ResNet50(weights='imagenet', include_top=False, input_shape=(sx, sy, 3))
     print('Model loaded')
 
     #create top model
@@ -200,20 +207,15 @@ def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, i
     top_model.add(Flatten(input_shape=model.output_shape[1:]))
     top_model.add(Dense(256, activation='relu'))
     #top_model.add(Dropout(0.3))
-    top_model.add(Dense(91, activation='sigmoid'))
+    top_model.add(Dense(52, activation='sigmoid'))
 
     #load top model weights
     top_model.load_weights(result_path + 'bottleneck_fc_model.h5')
 
     #join models
     new_model = Sequential()
-    for l in model.layers:
-        new_model.add(l)
-    #new_model.add(Dropout(0.3))
+    new_model.add(model)
     new_model.add(top_model)
-
-    # for layer in new_model.layers[:6]:
-    # layer.trainable = False
 
     #optimizer settings
     lr = 0.0001
@@ -233,7 +235,7 @@ def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, i
         rotation_range=90,
         width_shift_range=0.1,
         height_shift_range=0.1,
-        zoom_range=0.1,
+        zoom_range=0.2,
         horizontal_flip=1,
         vertical_flip=1,
         shear_range=0.05)

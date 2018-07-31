@@ -1,3 +1,10 @@
+#Author: Jason Maldonis
+#Comments by: Luis Rangel DaCosta
+#Last comment date: 7-31-18
+#Class for generating and qualifying STEM images using convolution method
+#Orginally used in StructOpt, used by Aidan Combs in convoluton mapping methods,
+#Slightly modified by Luis Rangel DaCosta
+
 import os
 import math
 import numpy as np

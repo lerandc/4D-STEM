@@ -1,3 +1,11 @@
+#Script for creating a Resnet model to make predictions on experimental PACBEDs
+#Author: Luis Rangel DaCosta, lerandc@umich.edu
+#Last comment date: 7-31-2018
+
+#Usage is as follows:
+#python Resnet3.py ID
+#where ID is the target GPU device (0-3)
+
 '''Adapt previous resnet example for MNIST data to CBED simulations
 '''
 
@@ -53,6 +61,7 @@ y_train_list = []
 
 sx, sy = 0, 0
 
+#load input data into array
 for current_folder in input_sub_folder:
     input_folder = input_base + current_folder
     input_images = [image for image in os.listdir(input_folder) if 'Sr_PACBED' in image]
@@ -68,13 +77,9 @@ for current_folder in input_sub_folder:
             img = np.load(input_folder + image).astype(dtype=np.float64)
             img = scale_range(img,0,1)
             img = img.astype(dtype=np.float32)
-            #print(img)
-            #print(fields)
             img_size = img.shape[0]
             sx, sy = img.shape[0], img.shape[1]
             x_train_list.append(img)
-            # Ti-r7-3-0_9_30.npy
-            # x_train_list.append(img)
             y_train_list.append(label)
 
 nb_train_samples = len(x_train_list)
@@ -84,43 +89,32 @@ print(sx, sy)
 print('training number: ')
 print(nb_train_samples)
 nb_class = len(set(y_train_list))
+
+#creates numpy input tensor as required by keras, with shape N x sx x sy x 1
 x_train = np.concatenate([arr[np.newaxis] for arr in x_train_list])
+
+#performs one-hot encoding on labels, requirement for training categorical models
 y_train = to_categorical(y_train_list, num_classes=nb_class)
 np.save(result_path + 'y_train.npy', y_train)
 
-# if K.image_data_format() == 'channels_first':
-#     x_train = x_train.reshape(x_train.shape[0], 1, img_rows, img_cols)
-#     x_test = x_test.reshape(x_test.shape[0], 1, img_rows, img_cols)
-#     input_shape = (1, img_rows, img_cols)
-# else:
-#     x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
-#     x_test = x_test.reshape(x_test.shape[0], img_rows, img_cols, 1)
-#     input_shape = (img_rows, img_cols, 1)
 
 x_train = x_train.reshape(x_train.shape[0], img_rows, img_cols, 1)
 input_shape = (1, img_rows, img_cols)
 x_train = x_train.astype('float32')
-# x_test = x_test.astype('float32')
-# x_train /= 255
-# x_test /= 255
+
+
 
 print('x_train shape:', x_train.shape)
 print('x_train type:', type(x_train))
 print(x_train.shape[0], 'train samples')
-# print(x_test.shape[0], 'test samples')
-
-# convert class vectors to binary class matrices
-# y_train = keras.utils.to_categorical(y_train, num_classes)
-# y_test = keras.utils.to_categorical(y_test, num_classes)
-
 print(input_shape)
-# print(x_test.shape)
 
 # 3,4,6,3 correspond to resnet 50 according to definition in Resnet
 # 3,4,23,3 corrspond to resnet 101
+#creaete Resnet Model
 model = ResnetBuilder.build(input_shape, 52, 'bottleneck', [3, 4, 6, 4])
 
-
+#compile with Adadelta optimizer
 model.compile(loss=keras.losses.categorical_crossentropy,
               optimizer=keras.optimizers.Adadelta(),
               metrics=['accuracy'])
@@ -130,9 +124,6 @@ model.fit(x_train, y_train,
           epochs=epochs,
           verbose=2,
           validation_data=)
-# score = model.evaluate(x_test, y_test, verbose=0)
-# print('Test loss:', score[0])
-# print('Test accuracy:', score[1])
 
 model.save(result_path +'FinalModel_resnet50.h5')
 
