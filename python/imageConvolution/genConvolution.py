@@ -1,3 +1,7 @@
+#Host script for generating convolution images for FCC Cu 111
+#Author: Luis Rangel DaCosta, lerandc@umich.edu
+#Last comment date: 7-31-2018
+
 from read_xyz import read_xyz
 from STEM_mod import STEM
 import matplotlib.pyplot as plt
@@ -6,6 +10,9 @@ import numpy as np
 from ase.build import fcc111
 
 def removeAtoms(atoms,z_lim):
+    #returns an ASE Atoms object with atoms above a certain z position removed
+    #atoms is the original ASE atoms object
+    #z_lim is a float for the desired max depth, in Angstroms
     newAtoms = [atom for atom in atoms if atom.position[2] < z_lim]
     return ase.Atoms(newAtoms)
 
@@ -40,10 +47,6 @@ else:
     #get atoms object using ASE and pre defined Cu 111 FCC model
     atoms = read_xyz('FCC_Cu_111_350nm.xyz',format='xyz')
 
-pos = atoms.get_positions()
-#print(np.max(pos[0,:]),np.max(pos[:,1]),np.max(pos[:,2]))
-#print(np.min(pos[0,:]),np.min(pos[:,1]),np.min(pos[:,2]))
-
 probe_step=.088052 #angstroms
 resolution = 1/probe_step
 HWHM = 0.4
@@ -52,25 +55,29 @@ for i in range(21):
     z_list.append(256.5+i*4.5)
 
 switch = False
+#iterate through the same thicknesses as previously simulated FCC Cu 111 simulations in multisilice
 for z in z_list:
+    #remove atoms from atom s object
     newAtoms = removeAtoms(atoms,z)
-    positions = newAtoms.get_positions()
-    dimensions = [np.max(positions[:,0]),np.max(positions[:,1])]#,np.max(positions[:,2])]
 
+    #create a generator object so that convolution images can be generated using STEM_mod from structopt
+    positions = newAtoms.get_positions()
+    dimensions = [np.max(positions[:,0]),np.max(positions[:,1])]
     parameters = {'HWHM':HWHM,'dimensions':dimensions,'resolution':resolution}
     generator = STEM(parameters=parameters)
     image = generator.get_image(newAtoms)
+
+    #add dimension to image so that they can be stacked
     image = image[:,:,np.newaxis]
-    #print(image.shape)
+
+    #create an image stack if the first time through loop with first input
+    #otherwise, add on to previously existing stack
     if switch:
         image_array = np.dstack((image_array,image[280:350,280:350,:]))
-        #print(image_array.shape)
     else:
         image_array = image[280:350,280:350,:]
-        #print(image_array.shape)
 
-    #print(z)
-    #print(image_array.shape)
+
     switch = True
     
 np.save('Cu_111_convolution',image_array)

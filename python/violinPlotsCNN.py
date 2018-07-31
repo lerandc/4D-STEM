@@ -1,3 +1,10 @@
+#Script for generating violin plots from a probability distribution (as opposed to a set of probabilistic data)
+#Samples the distribution with some psuedo Monte Carlo techniques
+#Not really ever used
+
+#Author: Luis Rangel DaCosta, lerandc@umich.edu
+#Last comment date: 7-31-2018
+
 import numpy as np 
 import seaborn as sns
 import pandas as pd

@@ -1,4 +1,11 @@
-import os
+#Script for retraining a trained Keras model to make predictions on experimental PACBEDs
+#Author: Luis Rangel DaCosta, lerandc@umich.edu
+#Last comment date: 7-31-2018
+
+#Usage is as follows:
+#python pretrained_inception.py ID
+#where ID is the target GPU device (0-3)import os
+
 import sys
 from keras.utils.np_utils import to_categorical
 from keras.preprocessing.image import ImageDataGenerator
@@ -17,6 +24,8 @@ import time
 
 def main():
     start_time = time.time()
+
+    #establish target paths for the input data
     input_base = '/srv/home/lerandc/outputs/718_STO/'
     input_sub_folder = ['0_0/','05_05/','025_025/','1_0/','1_1/','2_0/','2_2/','3_0/']   
     result_path =  '/srv/home/lerandc/CNN/models/072618_vgg16_fine_sample_extra_dense_retrain/attempt1_2_1/'
@@ -26,6 +35,7 @@ def main():
 
     sx, sy = 0, 0
 
+    #load input data into array
     for current_folder in input_sub_folder:
         input_folder = input_base + current_folder
         input_images = [image for image in os.listdir(input_folder) if 'Sr_PACBED' in image]
@@ -37,11 +47,16 @@ def main():
             else:
                 label = int(cmp[-1][:-4])  
                  
+            #in this logic, I usually specified which noise level I wanted, as the files were named uniquely     
             if (('noise100' in image)):
 
+                #load image as double float, scale it to (0,1) range, then convert back to single float
                 img = np.load(input_folder + image).astype(dtype=np.float64)
                 img = scale_range(img,0,1)
                 img = img.astype(dtype=np.float32)
+
+                #grab shape of image, then add zero channels to make sx x sy x 3 image shape
+                #then create stack of images
                 img_size = img.shape[0]
                 sx, sy = img.shape[0], img.shape[1]
                 new_channel = np.zeros((img_size, img_size))
@@ -57,13 +72,17 @@ def main():
     print('training number: ')
     print(nb_train_samples)
     nb_class = len(set(y_train_list))
+    
+    #creates numpy input tensor as required by keras, with shape N x sx x sy x 3
     x_train = np.concatenate([arr[np.newaxis] for arr in x_train_list])
+
+    #performs one-hot encoding on labels, requirement for training categorical models
     y_train = to_categorical(y_train_list, num_classes=nb_class)
     print('Size of image array in bytes')
     print(x_train.nbytes)
     np.save(result_path + 'y_train.npy', y_train)
 
-
+    #checks to see if model has been run before in current result folder, creates new log file if so
     logs = [log for log in os.listdir(result_path) if 'log' in log]
     max_index = 0
     for log in logs:
@@ -72,99 +91,23 @@ def main():
             max_index = cur
     max_index = max_index + 1
 
-    batch_size = 27
-    # step 1
-    #save_bottleneck_features(x_train, y_train, batch_size, nb_train_samples,result_path)
-
-    # step 2
-    epochs = 100
-    batch_size = 27  # batch size 32 works for the fullsize simulation library which has 19968 total files, total number of training file must be integer times of batch_size
-    #train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_folder, result_path)
-
-    # step 3
+    #retrain model
     epochs = 75
-    batch_size = 27
+    batch_size = 27 #batch size should be integer divisor of number of input images
     fine_tune(x_train, y_train, sx, sy, max_index, epochs, batch_size, input_folder, result_path)
 
     print('Total computing time is: ')
     print(int((time.time() - start_time) * 100) / 100.0)
 
 
-def save_bottleneck_features(x_train, y_train, batch_size, nb_train_samples,result_path):
-    model = applications.VGG16(include_top=False, weights='imagenet')
-    print('before featurewise center')
-    
-    datagen = ImageDataGenerator(
-        featurewise_center=True,
-        rotation_range=90,
-        width_shift_range=0.1,
-        height_shift_range=0.1,
-        zoom_range=0.1,
-        horizontal_flip=1,
-        vertical_flip=1,
-        shear_range=0.05)
-
-    datagen.fit(x_train)
-    print('made it past featurewise center')
-    generator = datagen.flow(
-        x_train,
-        y_train,
-        batch_size=batch_size,
-        shuffle=False)
-    print('made it past generator')
-
-    bottleneck_features_train = model.predict_generator(
-        generator, nb_train_samples // batch_size)
-    print('made it past the bottleneck features')
-    np.save(result_path + 'bottleneck_features_train.npy',
-            bottleneck_features_train)
-
-def train_top_model(y_train, nb_class, max_index, epochs, batch_size, input_folder, result_path):
-    train_data = np.load(result_path + 'bottleneck_features_train.npy')
-    train_labels = y_train
-    print(train_data.shape, train_labels.shape)
-    model = Sequential()
-    model.add(Flatten(input_shape=train_data.shape[1:]))
-    model.add(Dropout(0.3))
-    model.add(Dense(364, activation='relu'))
-    model.add(Dropout(0.3))
-    model.add(Dense(364, activation='relu'))
-    model.add(Dense(nb_class, activation='softmax'))
-
-    # compile setting:
-    lr = 0.0025
-    decay = 1e-6
-    momentum = 0.85
-    optimizer = optimizers.SGD(lr=lr, decay=decay, momentum=momentum, nesterov=True)
-    #optimizer = optimizers.Adadelta()
-    loss = 'categorical_crossentropy'
-    model.compile(optimizer=optimizer, loss=loss, metrics=['accuracy'])
-    
-    bottleneck_log = result_path + 'training_' + str(max_index) + '_bnfeature_log.csv'
-    csv_logger_bnfeature = callbacks.CSVLogger(bottleneck_log)
-    earlystop = EarlyStopping(monitor='val_acc', min_delta=0.0001, patience=20, verbose=1, mode='auto')
-
-    model.fit(train_data,train_labels,epochs=epochs,batch_size=batch_size,shuffle=True,
-            callbacks=[csv_logger_bnfeature],verbose=2,validation_split=0.2)
-
-    with open(bottleneck_log, 'a') as log:
-        log.write('\n')
-        log.write('input images: ' + input_folder + '\n')
-        log.write('batch_size:' + str(batch_size) + '\n')
-        log.write('learning rate: ' + str(lr) + '\n')
-        log.write('learning rate decay: ' + str(decay) + '\n')
-        log.write('momentum: ' + str(momentum) + '\n')
-        log.write('loss: ' + loss + '\n')
-
-    model.save_weights(result_path + 'bottleneck_fc_model.h5')
-
 def fine_tune(train_data, train_labels, sx, sy, max_index, epochs, batch_size, input_folder, result_path):
     print(train_data.shape, train_labels.shape)
 
+    #load pretrained model
     model = load_model('/srv/home/lerandc/CNN/models/072618_fine_sample_extra_dense/attempt1_2/FinalModel.h5')
     print('Model loaded')
 
-    # compile settings
+    #optimizer settings
     lr = 0.00005
     decay = 1e-6
     momentum = 0.75

@@ -6,7 +6,7 @@ Main file that creates and assesses models based on input parameters.
 Contains a method that creates and assesses models (run) and a class that
 defines an object to store relevant run parameters and information (RunSpecs).
 
-@author: Aidan Combs
+@author: Aidan Combs, modified by Luis Rangel DaCosta
 @version: 3.0
 """
 

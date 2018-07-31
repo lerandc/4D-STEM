@@ -8,7 +8,7 @@ appropriate test and training sets according to the run cross validation
 parameters, fits models to the training sets, and uses models to predict images
 from images in the convolution test set.
 
-@author: Aidan Combs
+@author: Aidan Combs, modified by Luis Rangel DaCosta
 @version: 3.0
 """
 from numpy import sqrt
