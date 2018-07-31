@@ -3,14 +3,14 @@ m = 9.19383e-31;
 e = 1.602177e-19;
 c = 299792458;
 h = 6.62607e-34;
-E0 = 300e3;
+E0 = 200e3;
 lambda = 1e10*(h/(sqrt(2*m*e*E0)))/(sqrt(1+(e*E0)/(2*m*c*c)));
 
-real_pixel_size = 0.01325;
-cell_dim = 58.4749;
+real_pixel_size = 0.06;
+cell_dim = 48.9125;
 z_size = 347.65;
 slice_thickness = 1.9525;
-f = 4;
+f = 1;
 f_x = 4*f;
 im_size = f_x*round(cell_dim/(f_x*real_pixel_size));
 

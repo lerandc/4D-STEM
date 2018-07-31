@@ -3,14 +3,14 @@
 clearvars
 close all
 
-files = dir('*.mrc'); files = {files.name}';
+files = dir('first 8FP/*.mrc'); files = {files.name}';
 base = 'multislice_2Doutput_slice';
 %ext = '_73_Cu_fine_search_high_angle.mrc';
 ext = '_711_Cu_fine_search.mrc';
 
 sort_cell = regexp(files,strcat(base,'\d*+'),'match','once');
 file_cell = IDfiles(sort_cell);
-test_im_size = getImSize(strcat(file_cell{1},ext));
+test_im_size = getImSize(strcat('first 8FP/',file_cell{1},ext));
 
 sigma = (90/8.8052)/2.355;
 gauss_kernel = fspecial('gaussian',[test_im_size(1) test_im_size(2)], sigma);
@@ -59,7 +59,7 @@ offset = 9.8969e3; %9.8761e3; 9.8969e3;
 % rough_scale = 4.189905e4;
 % offset = 9.9243e3;
 
-ref_array = (ref_array-offset)./(.7*rough_scale-offset);
+ref_array = (ref_array-offset)./(.7*.7*rough_scale-offset);
 ref_sum = sum(sum(ref_array.*ref_mask))./(sum(sum(ref_mask)));
 ref_max = max(max(ref_array.*ref_mask));
 
@@ -241,11 +241,16 @@ testArray = zeros(im_size(1),im_size(2),length(f_name));
 
     if nargin < 5
         for i = 1:length(f_name)
-            fname = strcat(f_name{i,1},ext);
+            fname = strcat('first 8FP/',f_name{i,1},ext);
             map = mrcReader(fname);
             stack = double(map.stack);
-            final_stack = fftshift(convolve2D(stack,kernel));
-            testArray(:,:,f_name{i,2}) = final_stack;
+            final_stack1 = fftshift(convolve2D(stack,kernel));
+            
+            fname = strcat('next 8FP/',f_name{i,1},ext(1:end-4),'2.mrc');
+            map = mrcReader(fname);
+            stack = double(map.stack);
+            final_stack2 = fftshift(convolve2D(stack,kernel));
+            testArray(:,:,f_name{i,2}) = (final_stack1+final_stack2)/2;
         end
     else
         angmin = annular_range(1); angmax = annular_range(2);
