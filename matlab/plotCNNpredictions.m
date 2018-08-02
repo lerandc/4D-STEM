@@ -98,16 +98,16 @@ for file = {files.name}
 
     figure(fig2)
     %by integration radius
-    for i = 1:size(r_filter,2)
+    for i = 6:8%1:size(r_filter,2)
         filter = logical(r_filter(:,i));
         x = measured(filter);
         y = predicted(filter);
         radius = unique(radii(filter,:),'rows');
         set = strtrim(unique(sets(filter,:),'rows'));
-        scatter(x,y,[],colors(1,:),'Filled','MarkerEdgeColor','k',...
-            'MarkerFaceAlpha',0.7)
-        %scatter(x,y,[],getColorR(colors,radius),'Filled','MarkerEdgeColor','k',...
+        %scatter(x,y,[],colors(1,:),'Filled','MarkerEdgeColor','k',...
             %'MarkerFaceAlpha',0.7)
+        scatter(x,y,[],getColorR(colors,radius),'Filled','MarkerEdgeColor','k',...
+            'MarkerFaceAlpha',0.7)
     end
     plot(1:100,1:100,'k--')
     grid on
@@ -120,8 +120,8 @@ for file = {files.name}
     end
     legend(h,'R1','R2','R3','R4','R5','R6','R7','R8','Location','southeast');
 
-    savefig(fig1,strcat(file_name(1:end-4),'_fig1.fig'))
-    %savefig(fig2,strcat(file_name(1:end-4),'_fig2.fig'))
+    %savefig(fig1,strcat(file_name(1:end-4),'_fig1.fig'))
+    savefig(fig2,strcat(file_name(1:end-4),'_fig2_r6_r8.fig'))
     close all
     clearvars -except files colors file averages prob_cutoff use_cutoff use_npeaks
 end
