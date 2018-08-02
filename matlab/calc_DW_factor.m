@@ -1,3 +1,8 @@
+%%Quick script to see some Debye Waller factors, this never worked
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
+
 %from "An investigation of the Debye-Waller factor and
 % Debye temperature of aluminium using nearest
 % neighbour central force pair interactions"

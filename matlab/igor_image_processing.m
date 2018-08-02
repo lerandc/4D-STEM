@@ -1,4 +1,8 @@
-%crop IGOR outputs, delete orig images, save as MRC 
+%%Processing script to develop comparable data structures for making quantative comparisons b/w autostem and prismatic
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
+%crop IGOR outputs, delete orig images, save as mat
 clearvars
 close all
 

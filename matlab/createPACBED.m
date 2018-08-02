@@ -1,3 +1,8 @@
+%%This script creates a PACBED from a folder array of CBED images
+%%A functina version of this script was created later to enable one shot processing of CBED patterns
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 clearvars
 close all
 

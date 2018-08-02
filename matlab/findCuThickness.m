@@ -1,4 +1,8 @@
-%%
+%%Script to determine the thickness of the Cu GB STEM image from MPIE
+%%Compares integration values of multislice HAADF columns and the integration of comparable Cu columns
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018 as
+
 %set up reference and test arrays
 clearvars
 close all

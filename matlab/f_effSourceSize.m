@@ -1,3 +1,7 @@
+%%Processing function to apply the blurring effect of finite electron source size through real space convoltuion of a cbed array
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018 
+
 function f_effSourceSize(source_size,pixel_size,base_name,base_ext,array_size)
 
     img_map = getPrismMap(array_size(1)-1,array_size(2)-1);

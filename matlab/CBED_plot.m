@@ -1,3 +1,7 @@
+%%Plotting script to look at individual CBED patterns one by one
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 %CBED script
 clearvars
 close all

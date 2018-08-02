@@ -1,3 +1,7 @@
+%%Function to return fourier space coordinates of 4D images as implemented in prismatic PRIMS algorithm
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018 as
+
 function [qx_mesh, qy_mesh, q_dist] = f_get_PRISM_coords(cell_dim,real_pixel_size,int_f)
 %returns fourier space coords of prismatic simulation with interpolation
 %factor int_f, with applied fftshift 

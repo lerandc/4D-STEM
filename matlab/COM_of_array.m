@@ -1,4 +1,8 @@
-% clearvars
+%%Plotting script to make a quick calculation of COM from a CBED array
+%%Used to chelp determine real space alignment between autostem and prismatic images
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 load('indexing_arrays.mat');
 
 % base_name = '6_4_multislice2';

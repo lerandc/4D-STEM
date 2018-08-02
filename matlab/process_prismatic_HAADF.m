@@ -1,3 +1,6 @@
+%%Script to create arbitrary vritual detectors from 3D prismatic output
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
 clearvars
 close all
 

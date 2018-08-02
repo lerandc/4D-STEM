@@ -1,3 +1,7 @@
+%%Converts raw MRC from prismatic multislice algorithm into matlab binary files
+%%Newer scripts to process the outputs on the cluster made this obsolete
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
 clearvars
 close all
 

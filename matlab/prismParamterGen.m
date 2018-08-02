@@ -1,4 +1,9 @@
-%createParamters
+%%Scipt to create a prismatic input file
+%%Run the script and reply to the standard input in matlab
+%%Not updated with new functions
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 clearvars
 options = getOptions;
 blank = 'Option prompts will begin. Enter blank if option is not used.';

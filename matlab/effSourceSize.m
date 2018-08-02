@@ -1,4 +1,8 @@
-%script to incorporate effect of effective source size on CBED arrays
+%%This script applies the blurring effect caused by finite electron source size by applying a convolution of the CBED arrays in real space
+%%A functional form of this script was later made to enable one shot processing of CBED images
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 clearvars
 close all
 

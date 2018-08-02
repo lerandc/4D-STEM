@@ -1,7 +1,10 @@
+%%Function to get fourier space coordinates of 4D images as implemented in prismatic multislice
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018 as
+
 function [qx_mesh,qy_mesh,q_dist,q_mask] = f_get_multislice_coords(cell_dim,real_pixel)
 %Returns the fourier space (un shifted) coordinates and anti-aliasing mask
 %for multislice algorithm as implemented in Prismatic.
-%NEED TO UPDATE TO ACCOUNT FOR NON SQUARE SIMULATION CELLS
     f_x = 16;
     f_y = 16;
 

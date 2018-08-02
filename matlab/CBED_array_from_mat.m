@@ -1,3 +1,7 @@
+%%Loads array of CBEDs into one large image
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 clearvars
 files = dir('*.mat');
 

@@ -1,3 +1,7 @@
+%%Processing function to apply Poisson noise to PACBED arrays
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 function f_addPoissonNoise(file_list,scale_factors)
 
     parfor f_iter = 1:length(file_list)

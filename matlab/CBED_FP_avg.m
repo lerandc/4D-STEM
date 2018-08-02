@@ -1,3 +1,8 @@
+%%Loads a variety of raw Prismatic 4D outputs and averages by frozen phonon and writes a tif
+%%Almost never used
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 clearvars
 close all
 

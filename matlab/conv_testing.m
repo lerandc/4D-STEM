@@ -1,3 +1,7 @@
+%%This script tried to improve quality of interpolated images/replicating interpolated images by applying some convolutions
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 clearvars
 close all
 map = mrcReader('C:\Users\leran\Desktop\Simulations and Data\6-13\613_tile_large_pot_bound\p_bound_5.mrc');

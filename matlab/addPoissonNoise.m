@@ -1,3 +1,8 @@
+%%Script for applying Poisson noise to simulated PACBED images
+%%A functional version of this script was made later to facilate one shot processing of the raw CBEDs
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 scale_factor = [1 10 50 100 150 250].*1e4; %scale to add poisson noise
 %base loop for iterating through files
 files = dir('*.mat');

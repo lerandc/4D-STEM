@@ -1,3 +1,7 @@
+%%Processing script to create PACBEDs from 4D cbed array
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 function f_createPACBED(radii,centers,base_name,base_ext,out_name,out_ext,array_size)
     imsize = size(loadImageFromMat(strcat(base_name,'_X0_Y0',base_ext)));
     prism_map = getPrismMap(array_size(1),array_size(2));

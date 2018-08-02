@@ -1,3 +1,7 @@
+%%Host script to take raw prismatic output and then run it through a processing pipeline to be ready for CNN training
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018 as
+
 clearvars
 close all
 tic

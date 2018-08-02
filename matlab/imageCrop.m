@@ -1,3 +1,7 @@
+%%Crops zero padding from image
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 function crop = imageCrop(img)
 %removes zero padding from masked image
     %cut left

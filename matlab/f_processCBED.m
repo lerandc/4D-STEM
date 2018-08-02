@@ -1,3 +1,7 @@
+%%Processing script to create matlab binary files of raw MRC data from prismatic
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018 as
+
 function f_processCBED(cell_dim,real_pixel,E0,FP,behavior,q_cut,q_cut_style,algorithm,interpolation)
 %cell dim is 2 element vector with dimension of simulation cell X, Y
 %real pixel is size of real pixel potential sampling in prismatic

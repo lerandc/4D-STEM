@@ -1,3 +1,7 @@
+%%Error calculation script for comparing autostem HAADF images and prismatic HAADF images
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 clearvars
 close all
 

@@ -1,3 +1,8 @@
+%%Creates a atomic model of FCC Cu with 111 plane normal to Z
+%%Probably esay, definitely much more accurate, definitely quicker to use something like ASE to create models instead
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 clearvars
 close all
 

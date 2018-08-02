@@ -1,3 +1,7 @@
+%%Function to resize images of different resolutions, useful for comparing PRISM interpolated CBEDs
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 function [re_img1,re_img2] = matchResolution(img1,img2)
 %Resizes larger image to resolution of smaller image. Images must be
 %similar rectangles.

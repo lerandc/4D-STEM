@@ -1,3 +1,7 @@
+%%Function to get autostem fourier space coordinates for an image
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018 as
+
 function [qx_mesh,qy_mesh,q_dist] = f_get_IGOR_coords(cell_dim_x,cell_dim_y,file_name)
 
     qx_pixel = 1/(cell_dim_x);

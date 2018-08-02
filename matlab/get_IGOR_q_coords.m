@@ -1,3 +1,6 @@
+%%Develops fourier space array for autostem images
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
 clearvars
 
 cell_dim_x = 48.8125;

@@ -1,4 +1,8 @@
-%fourier spacing for PRISM multislice 
+%%Replicates the fourier space arrays as implemented in in prismatic multislice
+%%A functional form o fthis script was created later
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 clearvars
 m = 9.19383e-31;
 e = 1.602177e-19;

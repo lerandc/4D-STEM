@@ -1,3 +1,7 @@
+%%One to one comparison of CBED images for qualifying autostem and prismatic
+%%Author: Luis Rangel DaCosta, lerandc@umich.edu
+%%Last comment date: 8-2-2018
+
 clearvars
 close all
 %Before running this script, check: file directories, annular integration
